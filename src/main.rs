@@ -40,32 +40,32 @@ fn offset<T>(n: u32) -> *const c_void {
 
 // == // Modify and complete the function below for the first task
 // unsafe fn FUNCTION_NAME(ARGUMENT_NAME: &Vec<f32>, ARGUMENT_NAME: &Vec<u32>) -> u32 { }
-unsafe fn triangle_vao(vertices: &Vec<f32>, indices: &Vec<u32>) -> u32 {
+unsafe fn initiate_vao(vertices: &Vec<f32>, indices: &Vec<u32>) -> u32 {
 
     // Variables used for binding
-    let mut vao: u32 = 0;
-    let mut vbo: u32 = 0;
-    let vertex_index: u32 = 0;
+    let mut vao: u32 = 0; // this is where the Vertex array object (vao) id is stored.
+    let mut vbo: u32 = 0; // Vertex buffer object (vbo)
+    let vertex_index: u32 = 0; 
     let mut index_buffer_id: u32 = 0;
 
-    // Bind triangle_vao
-    gl::GenVertexArrays(1, &mut vao);
-    assert_ne!(vao, 0); // make sure 0 is not returned
-    gl::BindVertexArray(vao);
+    // Bind initiate_vao
+    gl::GenVertexArrays(1, &mut vao); // first argument is number of vao's generating and the second is a pointer to a location where it should be stored 
+    assert_ne!(vao, 0); // make sure 0 is not returned to vao
+    gl::BindVertexArray(vao); // this will link/bind the object to shaders. 
 
-    // Buffers for vertice coordinates
-    gl::GenBuffers(1, &mut vbo);
+    //  --- Setup buffers for vertice coordinates --- //
+    gl::GenBuffers(1, &mut vbo); // generating vbo id.
     assert_ne!(vbo, 0); // make sure 0 is not returned
-    gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
-
-
+    gl::BindBuffer(gl::ARRAY_BUFFER, vbo); // binding the vbo to a target (first argument)
+    
+    // initializes and creates the buffer object's data store
     gl::BufferData(
         gl::ARRAY_BUFFER,
         byte_size_of_array(vertices),
         pointer_to_array(vertices),
         gl::STATIC_DRAW);
 
-    let num_of_components = 3;
+    let num_of_components = 3; // As we operate in 3D we need 3 components 
     gl::VertexAttribPointer(
         vertex_index,
         num_of_components,
@@ -74,9 +74,9 @@ unsafe fn triangle_vao(vertices: &Vec<f32>, indices: &Vec<u32>) -> u32 {
         0,
         ptr::null());
 
-    gl::EnableVertexAttribArray(vertex_index);
+    gl::EnableVertexAttribArray(vertex_index); // This just enables vertex attribute array for the given index
 
-    // setup vertex buffer object
+    //  --- Setup buffers for vertex buffer object --- //
     gl::GenBuffers(1, &mut index_buffer_id);
     assert_ne!(index_buffer_id, 0); // make sure 0 is not returned
     gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, index_buffer_id);
@@ -92,28 +92,9 @@ unsafe fn triangle_vao(vertices: &Vec<f32>, indices: &Vec<u32>) -> u32 {
 unsafe fn draw_scene(count: usize) {
     gl::FrontFace(gl::CW);
     gl::DrawElements(gl::TRIANGLES, count as i32, gl::UNSIGNED_INT, ptr::null()); // TRIANGLE_STRIP can be used to easier build up geometry
-
 }
 
 fn main() {
-
-    // Triangles
-    // let v1: Vec<f32> = vec![-0.6, -0.6, 0.0, 0.6, -0.6, 0.0, 0.0, 0.6, 0.0];
-    // let v1: Vec<f32> = vec![-1.0, -1.0, 0.0, -1.0, 1.0, 0.0, -0.5, 0.5, 0.0, -0.6, -0.6, 0.0, 0.6, -0.6, 0.0, 0.0, 0.6, 0.0, -0.5, -0.5, 0.0, 0.5, -0.5, 0.0, 0.0, 0.5, 0.0];
-    // let v2: Vec<f32> = vec![0.0, 1.0, 0.0, -1.0, 0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 1.5, 0.0, 0.0 ];
-
-    // const VERTICES: [Vertex; 3] =
-    // [-0.5, -0.5, 0.0, 0.5, -0.5, 0.0, 0.0, 0.5, 0.0];
-
-    // let mut indices: Vec<u32> = vec![];
-    // let mut indice: u32 = 0;
-    // for i in 0..v1.len() {
-    //     indices.push(indice);
-    //     indice += 1;
-    // }
-
-    // println!("Result is:{}", v1.len());
-
     // Set up the necessary objects to deal with windows and event handling
     let el = glutin::event_loop::EventLoop::new();
     let wb = glutin::window::WindowBuilder::new()
@@ -167,7 +148,7 @@ fn main() {
 
         // == // Set up your VAO here
 
-        //TASK 1
+        // --- TASK 1 --- //
 
         //triangles data
 
@@ -199,14 +180,14 @@ fn main() {
         ]; */
 
 
-        //TASK 2
+        // --- TASK 2 --- //
 
-        //task 2a
+        // task 2a
         // == // Set up your vao here
         // unsafe {
         //     let draw_vao: u32 = 0;
         //     gl::BindVertexArray(draw_vao);
-        //     let vao = triangle_vao(& v1, & indices);
+        //     let vao = initiate_vao(& v1, & indices);
         // }
 
         /* let vertices: Vec<f32> = vec![
@@ -219,15 +200,14 @@ fn main() {
             0, 1, 2
         ]; */
 
-        //task2b
-
+        // task 2b
 
         /* let indices: Vec<u32> = vec![
             2, 1, 0
         ];*/
 
-        //Task 2d
-        //changing the simple.vert files positions
+        // task 2d 
+        // changing the simple.vert files positions
 
         let vertices: Vec<f32> = vec![
             0.6, -0.2, 0.0,  // 0
@@ -240,8 +220,8 @@ fn main() {
         ];
 
 
-        //generating the vao_id to the triangle that are getting drawed.
-        let vao_id = unsafe{ triangle_vao(& vertices, & indices) };
+        // Initiating the vao to the triangle that are getting drawed.
+        let vao_id = unsafe{ initiate_vao(& vertices, & indices) };
 
         // Basic usage of shader helper:
         // The example code below returns a shader object, which contains the field `.program_id`.
@@ -261,7 +241,7 @@ fn main() {
         };
 
 
-        // Dissable to use custom frag shader*
+        // This needs to be dissable when using a custom frag shader*
         // unsafe {
         //     gl::UseProgram(0);
         // }
@@ -308,7 +288,7 @@ fn main() {
 
                 // Issue the necessary commands to draw your scene here
 
-                draw_scene(vertices.len());
+                draw_scene(vertices.len()); //drawing the triangles now, this will draw all objects later
                 gl::FrontFace(gl::CW); //CCW for counter clockwise, CW for Clockwise
                 //draw the elements mode: triangle, number of points/count: lenght of the indices, type and void* indices
 
