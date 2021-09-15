@@ -1,5 +1,7 @@
 #version 450 core
 
+uniform layout(location = 4) float time;
+
 in vec3 position;
 
 in layout(location=2) vec4 vertexColor;
@@ -7,15 +9,17 @@ in layout(location=2) vec4 vertexColor;
 out vec4 fragmentColor;
 // layout(location = 1) in vec3 vertexColor;
 
-
+#define PI 3.14
 
 void main()
 {
     mat4 diagMatrix = mat4(1);
 
+    float oc = 1.0*sin(2*PI*0.5*time);
+
     mat4 random_matrix = mat4(
-        0.2, 0.0, 0.0, 0.0,
-        0.0, 2.0, 0.0, 0.0,
+        1.0+oc, 0.0, 0.0, 0.0,
+        0.0, 1.0-oc, 0.0, 0.0,
         0.0, 0.0, 1.0, 0.0,
         0.0, 0.0, 0.0, 1.0
     );

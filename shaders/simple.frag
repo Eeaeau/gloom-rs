@@ -1,7 +1,8 @@
 #version 450 core
 
-out vec4 color;
+uniform layout(location = 4) float time;
 
+out vec4 color;
 in vec4 fragmentColor;
 
 // Logic for deciding checker block
@@ -15,27 +16,33 @@ void checkarboard(in float coordinate, in uint range, out bool result) {
     else
         result = bool(1);
 }
+#define PI 3.14
+
 
 void main()
 {
-    // bool checker_x;
-    // bool checker_y;
 
-    // checkarboard(gl_FragCoord.x, 50, checker_x);
-    // checkarboard(gl_FragCoord.y, 50, checker_y);
+    bool checker_x;
+    bool checker_y;
 
-    // // Logic for making of the pattern.
-    // if(checker_y)
-    //     if(checker_x)
-    //         color = vec4(1.0f, 1.0f, 1.0f, 1.0f); // white
-    //     else
-    //         color = vec4(0.0f, 0.0f, 0.0f, 1.0f);   // black
-    // else
-    //     if(!checker_x)
-    //         color = vec4(1.0f, 1.0f, 1.0f, 1.0f); // white
-    //     else
-    //         color = vec4(0.0f, 0.0f, 0.0f, 1.0f); // black
+    float pi =  3.14;
+    float oc = 200.0*sin(2*PI*time);
 
-    color = fragmentColor;
+    checkarboard(gl_FragCoord.x+oc, 50, checker_x);
+    checkarboard(gl_FragCoord.y, 50, checker_y);
+
+    // Logic for making of the pattern.
+    if(checker_y)
+        if(checker_x)
+            color = vec4(1.0f, 1.0f, 1.0f, 1.0f); // white
+        else
+            color = vec4(0.0f, 0.0f, 0.0f, 1.0f);   // black
+    else
+        if(!checker_x)
+            color = vec4(1.0f, 1.0f, 1.0f, 1.0f); // white
+        else
+            color = vec4(0.0f, 0.0f, 0.0f, 1.0f); // black
+
+    // color = fragmentColor;
 
 }
