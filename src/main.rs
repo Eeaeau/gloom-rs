@@ -40,24 +40,24 @@ fn offset<T>(n: u32) -> *const c_void {
 
 // == // Modify and complete the function below for the first task
 // unsafe fn FUNCTION_NAME(ARGUMENT_NAME: &Vec<f32>, ARGUMENT_NAME: &Vec<u32>) -> u32 { }
-unsafe fn initiate_vao(vertices: &Vec<f32>, indices: &Vec<u32>) -> u32 {
+unsafe fn initiate_vao(vertices: &Vec<f32>, indices: &Vec<u32>, color: &Vec<f32>) -> u32 {
 
     // Variables used for binding
     let mut vao: u32 = 0; // this is where the Vertex array object (vao) id is stored.
     let mut vbo: u32 = 0; // Vertex buffer object (vbo)
-    let vertex_index: u32 = 0; 
-    let mut index_buffer_id: u32 = 0;
+    let vertex_index: u32 = 0;
+    let mut index_buffer_id: u32 = 1;
 
     // Bind initiate_vao
-    gl::GenVertexArrays(1, &mut vao); // first argument is number of vao's generating and the second is a pointer to a location where it should be stored 
+    gl::GenVertexArrays(1, &mut vao); // first argument is number of vao's generating and the second is a pointer to a location where it should be stored
     assert_ne!(vao, 0); // make sure 0 is not returned to vao
-    gl::BindVertexArray(vao); // this will link/bind the object to shaders. 
+    gl::BindVertexArray(vao); // this will link/bind the object to shaders.
 
     //  --- Setup buffers for vertice coordinates --- //
     gl::GenBuffers(1, &mut vbo); // generating vbo id.
     assert_ne!(vbo, 0); // make sure 0 is not returned
     gl::BindBuffer(gl::ARRAY_BUFFER, vbo); // binding the vbo to a target (first argument)
-    
+
     // initializes and creates the buffer object's data store
     gl::BufferData(
         gl::ARRAY_BUFFER,
@@ -65,10 +65,10 @@ unsafe fn initiate_vao(vertices: &Vec<f32>, indices: &Vec<u32>) -> u32 {
         pointer_to_array(vertices),
         gl::STATIC_DRAW);
 
-    let num_of_components = 3; // As we operate in 3D we need 3 components 
+    let vertex_components = 3; // As we operate in 3D we need 3 components
     gl::VertexAttribPointer(
         vertex_index,
-        num_of_components,
+        vertex_components,
         gl::FLOAT,
         gl::FALSE,
         0,
@@ -86,11 +86,38 @@ unsafe fn initiate_vao(vertices: &Vec<f32>, indices: &Vec<u32>) -> u32 {
         pointer_to_array(indices),
         gl::STATIC_DRAW);
 
+
+    // ----------- color setup ------------ //
+
+    let mut color_index: u32 = 0;
+    let color_buffer_id: u32 = 2;
+
+    gl::GenBuffers(1, &mut color_index);
+    assert_ne!(color_index, 0); // make sure 0 is not returned
+    gl::BindBuffer(gl::ARRAY_BUFFER, color_index);
+
+    let color_components = 4; // As we operate with alpha we need 4 components
+    gl::VertexAttribPointer(
+        color_buffer_id,
+        color_components,
+        gl::FLOAT,
+        gl::FALSE,
+        0,
+        ptr::null());
+
+    gl::EnableVertexAttribArray(color_buffer_id); // This just enables color attribute array for the given index
+
+    gl::BufferData(
+        gl::ARRAY_BUFFER,
+        byte_size_of_array(color),
+        pointer_to_array(color),
+        gl::STATIC_DRAW);
+
     return vao
 }
 
 unsafe fn draw_scene(count: usize) {
-    gl::FrontFace(gl::CW);
+    gl::FrontFace(gl::CW); //CCW for counter clockwise, CW for Clockwise
     gl::DrawElements(gl::TRIANGLES, count as i32, gl::UNSIGNED_INT, ptr::null()); // TRIANGLE_STRIP can be used to easier build up geometry
 }
 
@@ -206,22 +233,46 @@ fn main() {
             2, 1, 0
         ];*/
 
-        // task 2d 
+        // task 2d
         // changing the simple.vert files positions
 
         let vertices: Vec<f32> = vec![
-            0.6, -0.2, 0.0,  // 0
-            0.4, 0.4, 0.0,   // 1
-            -0.6, -0.2, 0.0   // 2
+            0.5, -0.5, -0.9,  // 0
+            -0.5, -0.5, -0.9,   // 1
+            -0.0, 0.5, -0.9,   // 2
+
+            1.0, -1.0, 0.9,  // 0
+            -0.6, 0.2, 0.9,   // 1
+            1.0, 1.0, 0.9,   // 2
+
+            -1.0, -1.0, 0.0,  // 0
+            -1.0, 1.0, 0.0,   // 1
+            0.6, -0.2, 0.0   // 2
+
         ];
 
         let indices: Vec<u32> = vec![
-            0, 1, 2
+            0, 1, 2, 3, 4, 5, 6, 7, 8
+        ];
+
+        let color: Vec<f32> = vec![
+
+            1.0, 0.0, 0.0, 0.33,
+            1.0, 0.0, 0.0, 0.33,
+            1.0, 0.0, 0.0, 0.33,
+
+            0.0, 1.0, 0.0, 0.33,
+            0.0, 1.0, 0.0, 0.33,
+            0.0, 1.0, 0.0, 0.33,
+
+            0.0, 0.0, 1.0, 0.33,
+            0.0, 0.0, 1.0, 0.33,
+            0.0, 0.0, 1.0, 0.33
         ];
 
 
         // Initiating the vao to the triangle that are getting drawed.
-        let vao_id = unsafe{ initiate_vao(& vertices, & indices) };
+        let vao_id = unsafe{ initiate_vao(& vertices, & indices, & color) };
 
         // Basic usage of shader helper:
         // The example code below returns a shader object, which contains the field `.program_id`.
@@ -289,7 +340,6 @@ fn main() {
                 // Issue the necessary commands to draw your scene here
 
                 draw_scene(vertices.len()); //drawing the triangles now, this will draw all objects later
-                gl::FrontFace(gl::CW); //CCW for counter clockwise, CW for Clockwise
                 //draw the elements mode: triangle, number of points/count: lenght of the indices, type and void* indices
 
             }
