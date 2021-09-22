@@ -47,10 +47,25 @@ fn offset<T>(n: u32) -> *const c_void {
 // Get a null pointer (equivalent to an offset of 0)
 // ptr::null()
 
+struct CameraProperties {
+    x: f32,
+    y: f32,
+    z: f32,
+    yaw: f32,
+    pitch: f32,
+    roll: f32,
+
+}
+
+
 
 
 // == // Modify and complete the function below for the first task
 // unsafe fn FUNCTION_NAME(ARGUMENT_NAME: &Vec<f32>, ARGUMENT_NAME: &Vec<u32>) -> u32 { }
+
+
+
+
 unsafe fn initiate_vao(vertices: &Vec<f32>, indices: &Vec<u32>, color: &Vec<f32>) -> u32 {
 
     // Variables used for binding
@@ -324,6 +339,16 @@ fn main() {
 
         let first_frame_time = std::time::Instant::now();
         let mut last_frame_time = first_frame_time;
+
+        let mut camera_motion = CameraProperties {
+            x: 1.0,
+            y: 1.0,
+            z: -1.0,
+            yaw: 0.0,
+            pitch: 0.0,
+            roll: 0.0,
+        };
+
         // The main rendering loop
         loop {
             let now = std::time::Instant::now();
@@ -335,18 +360,54 @@ fn main() {
                 gl::Uniform1f(4, elapsed);
             }
 
+            let speed_x = 0.5;
+            let speed_y = 0.5;
+            let speed_z = 0.5;
+            let speed_yaw = 0.5;
+            let speed_pitch = 0.5;
+            let speed_roll = 0.5;
+
             // Handle keyboard input
             if let Ok(keys) = pressed_keys.lock() {
                 for key in keys.iter() {
                     match key {
+                        VirtualKeyCode::W => {
+                            camera_motion.z += delta_time*speed_z;
+                        },
                         VirtualKeyCode::A => {
-                            _arbitrary_number += delta_time;
+                            camera_motion.x += delta_time*speed_x;
+                        },
+                        VirtualKeyCode::S => {
+                            camera_motion.z -= delta_time*speed_z;
                         },
                         VirtualKeyCode::D => {
-                            _arbitrary_number -= delta_time;
+                            camera_motion.x -= delta_time*speed_x;
                         },
-
-
+                        VirtualKeyCode::Q => {
+                            camera_motion.y += delta_time*speed_z;
+                        },
+                        VirtualKeyCode::E => {
+                            camera_motion.y -= delta_time*speed_y;
+                        },
+                        VirtualKeyCode::Left => {
+                            camera_motion.yaw += delta_time*speed_yaw;
+                        },
+                        VirtualKeyCode::Right => {
+                            camera_motion.yaw -= delta_time*speed_yaw;
+                        },
+                        VirtualKeyCode::Up => {
+                            camera_motion.pitch -= delta_time*speed_pitch;
+                        },
+                        VirtualKeyCode::Down => {
+                            camera_motion.pitch += delta_time*speed_pitch;
+                        },
+                        VirtualKeyCode::T => {
+                            camera_motion.roll += delta_time*speed_roll;
+                        },
+                        VirtualKeyCode::F => {
+                            camera_motion.roll -= delta_time*speed_roll;
+                        },
+                        
                         _ => { }
                     }
                 }
@@ -366,13 +427,23 @@ fn main() {
                 // Issue the necessary commands to draw your scene here 
 
                 let scale_vector: glm::Vec3 = glm::vec3(1.0, 1.0, 1.0);
-                let camera_rotation_vector: glm::Vec3 = glm::vec3(0.0, 0.0, 0.0);
+                let mut camera_rotation_vector: glm::Vec3 = glm::vec3(0.0, 0.0, 0.0);
                 let direction_vector: glm::Vec3 = glm::vec3(0.0, 0.0, -6.0+5.0*elapsed.sin());
 
                 
                 // let angle: f32 = 360.0f32.to_radians();
                 
                 //let mut identity: glm::Mat4 = glm::identity();
+
+                //er dette riktig
+
+                let translate_z: glm::Mat4 = glm::mat4(
+                    1.0, 0.0, 0.0, 0.0,
+                    0.0, 1.0, 0.0, 0.0,
+                    0.0, 0.0, 49.5, -50.5,
+                    0.0, 0.0, 0.0, 1.0, 
+                );
+
                 
                 let cam: glm::Mat4 =
                 glm::perspective(
@@ -381,9 +452,20 @@ fn main() {
                     1.0,
                     100.0
                 );
+
+                let mut motion_matrix: glm::Mat4 = cam * translate_z;
+
                 
-                let transform_matrix: glm::Mat4 = cam * glm::translation(&direction_vector)*glm::rotation(10.0*elapsed, &glm::vec3(1.0, 0.0, 0.0)) * glm::scaling(&scale_vector);
-                gl::UniformMatrix4fv(5, 1, gl::FALSE, transform_matrix.as_ptr());
+                //let transform_matrix: glm::Mat4 = cam * glm::translation(&direction_vector)*glm::rotation(10.0*elapsed, &glm::vec3(1.0, 0.0, 0.0)) * glm::scaling(&scale_vector);
+
+                motion_matrix = glm::translate(&motion_matrix, &glm::vec3(camera_motion.x, 0.0, 0.0));
+                motion_matrix = glm::translate(&motion_matrix, &glm::vec3(0.0, camera_motion.y, 0.0));
+                motion_matrix = glm::translate(&motion_matrix, &glm::vec3(0.0, 0.0, camera_motion.z));
+                motion_matrix = glm::rotate_y(&motion_matrix, camera_motion.yaw);
+                motion_matrix = glm::rotate_x(&motion_matrix, camera_motion.pitch);
+                motion_matrix = glm::rotate_z(&motion_matrix, camera_motion.roll);
+
+                gl::UniformMatrix4fv(5, 1, gl::FALSE, motion_matrix.as_ptr());
                                 
                                 
                                 
@@ -448,9 +530,6 @@ fn main() {
                     Escape => {
                         *control_flow = ControlFlow::Exit;
                     },
-                    Q => {
-                        *control_flow = ControlFlow::Exit;
-                    }
                     _ => { }
                 }
             },
