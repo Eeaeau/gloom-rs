@@ -11,7 +11,8 @@ use std::sync::{Mutex, Arc, RwLock};
 
 
 // use obj::{load_obj, Obj};
-
+use std::path::Path;
+use tobj;
 
 mod shader;
 mod util;
@@ -47,7 +48,16 @@ fn offset<T>(n: u32) -> *const c_void {
 // Get a null pointer (equivalent to an offset of 0)
 // ptr::null()
 
-
+fn clamp<T: PartialOrd>(input: T, min: T, max: T) -> T {
+    debug_assert!(min <= max, "min must be less than or equal to max");
+    if input < min {
+        min
+    } else if input > max {
+        max
+    } else {
+        input
+    }
+}
 
 // == // Modify and complete the function below for the first task
 // unsafe fn FUNCTION_NAME(ARGUMENT_NAME: &Vec<f32>, ARGUMENT_NAME: &Vec<u32>) -> u32 { }
@@ -150,6 +160,19 @@ fn main() {
     let arc_pressed_keys = Arc::new(Mutex::new(Vec::<VirtualKeyCode>::with_capacity(10)));
     // Make a reference of this vector to send to the render thread
     let pressed_keys = Arc::clone(&arc_pressed_keys);
+
+    struct Camera {
+        /// location in x-direction
+        x: f32,
+        y: f32,
+        z: f32,
+        movement_speed: f32,
+        /// yaw (left-right
+        yaw: f32,
+        pitch: f32,
+        roll: f32,
+        look_sensitivity: f32
+    }
 
     // Set up shared tuple for tracking mouse movement between frames
     let arc_mouse_delta = Arc::new(Mutex::new((0f32, 0f32)));
@@ -290,8 +313,77 @@ fn main() {
         // let input = BufReader::new(File::open("assets/teapot.obj")?);
         // let teapot: Obj = load_obj(input)?;
 
-        // let teapot = tobj::load_obj("assets/teapot.obj", tobj::LoadOptions::default()); 
-    
+
+
+        // ---------------- import OBJ object -------------- //
+        let mut obj_vertices: Vec<f32> = vec![];
+        let mut obj_indices: Vec<u32> = vec![];
+
+        let teapot = tobj::load_obj(
+            "assets/teapot.obj",
+            &tobj::LoadOptions {
+                single_index: true,
+                triangulate: true,
+                ..Default::default()
+            },
+        );
+        assert!(teapot.is_ok());
+        let (models, materials) = teapot.expect("Failed to load OBJ file");
+
+        // Materials might report a separate loading error if the MTL file wasn't found.
+        // If you don't need the materials, you can generate a default here and use that
+        // instead.
+
+        println!("# of models: {}", models.len());
+
+
+        for (i, m) in models.iter().enumerate() {
+            let mesh = &m.mesh;
+
+            println!("model[{}].name = \'{}\'", i, m.name);
+            println!("model[{}].mesh.material_id = {:?}", i, mesh.material_id);
+
+            println!(
+                "Size of model[{}].face_arities: {}",
+                i,
+                mesh.face_arities.len()
+            );
+
+            let mut next_face = 0;
+            for f in 0..mesh.face_arities.len() {
+                let end = next_face + mesh.face_arities[f] as usize;
+                let face_indices: Vec<_> = mesh.indices[next_face..end].iter().collect();
+                println!("    face[{}] = {:?}", f, face_indices);
+                next_face = end;
+            }
+
+            // Normals and texture coordinates are also loaded, but not printed in this example
+            println!("model[{}].vertices: {}", i, mesh.positions.len() / 3);
+
+            assert!(mesh.positions.len() % 3 == 0);
+            for v in 0..mesh.positions.len() / 3 {
+                println!(
+                    "    v[{}] = ({}, {}, {})",
+                    v,
+                    mesh.positions[3 * v],
+                    mesh.positions[3 * v + 1],
+                    mesh.positions[3 * v + 2]
+                );
+            }
+            for v in &mesh.positions {
+
+                obj_vertices.push(*v);
+            }
+            for i in &mesh.indices {
+                obj_indices.push(*i);
+            }
+            // for i in &mesh.vertex_components {
+            //     obj_indices.push(*i);
+            // }
+        }
+
+
+        // ------------------- end OBJ import ------------------- //
 
         // Initiating the vao to the triangle that are getting drawed.
         let vao_id = unsafe{ initiate_vao(& vertices, & indices, & color) };
@@ -319,6 +411,20 @@ fn main() {
         //     gl::UseProgram(0);
         // }
 
+        let mut camera_properties = Camera {
+            x: 1.0,
+            y: 1.0,
+            // Start with -1 since view-box is from -1 to 1, this way we see the scene at the beginning
+            z: -1.0,
+            movement_speed: 2.0,
+            yaw: 0.0,
+            pitch: 0.0,
+            roll: 0.0,
+            look_sensitivity: 0.008
+        };
+
+
+
         // Used to demonstrate keyboard handling -- feel free to remove
         let mut _arbitrary_number = 0.0;
 
@@ -336,16 +442,33 @@ fn main() {
             }
 
             // Handle keyboard input
+
             if let Ok(keys) = pressed_keys.lock() {
                 for key in keys.iter() {
                     match key {
+                        // sin and cos is used to take current orientation into account for movement
+                        VirtualKeyCode::W => {
+                            camera_properties.z += delta_time * camera_properties.yaw.cos() * camera_properties.movement_speed;
+                            camera_properties.x -= delta_time * camera_properties.yaw.sin() * camera_properties.movement_speed;
+                        },
+                        VirtualKeyCode::S => {
+                            camera_properties.z -= delta_time * camera_properties.yaw.cos() * camera_properties.movement_speed;
+                            camera_properties.x += delta_time * camera_properties.yaw.sin() * camera_properties.movement_speed;
+                        },
                         VirtualKeyCode::A => {
-                            _arbitrary_number += delta_time;
+                            camera_properties.z += delta_time * camera_properties.yaw.cos() * camera_properties.movement_speed;
+                            camera_properties.x += delta_time * camera_properties.yaw.sin() * camera_properties.movement_speed;
                         },
                         VirtualKeyCode::D => {
-                            _arbitrary_number -= delta_time;
+                            camera_properties.z -= delta_time * camera_properties.yaw.cos() * camera_properties.movement_speed;
+                            camera_properties.x -= delta_time * camera_properties.yaw.sin() * camera_properties.movement_speed;
                         },
-
+                        VirtualKeyCode::Q => {
+                            camera_properties.y += delta_time * camera_properties.movement_speed;
+                        },
+                        VirtualKeyCode::E => {
+                            camera_properties.y -= delta_time * camera_properties.movement_speed;
+                        },
 
                         _ => { }
                     }
@@ -354,40 +477,59 @@ fn main() {
             // Handle mouse movement. delta contains the x and y movement of the mouse since last frame in pixels
             if let Ok(mut delta) = mouse_delta.lock() {
 
+                // if camera_properties.pitch < 90.0f32.to_radians() {
+                //     camera_properties.pitch += delta.1.abs() * camera_properties.look_sensitivity;
+                // }
+                // if camera_properties.pitch > -90.0f32.to_radians() {
+                //     camera_properties.pitch -= delta.1.abs() * camera_properties.look_sensitivity;
+                // }
 
+                camera_properties.pitch += delta.1 * camera_properties.look_sensitivity;
+                camera_properties.pitch = clamp(camera_properties.pitch, -90.0f32.to_radians(), 90.0f32.to_radians());
+
+                camera_properties.yaw += delta.0 * camera_properties.look_sensitivity;
+
+                println!("mouse x: {}",  delta.0);
+                println!("mouse y: {}",  delta.1);
 
                 *delta = (0.0, 0.0);
             }
 
             unsafe {
                 gl::ClearColor(0.76862745, 0.71372549, 0.94901961, 1.0); // moon raker, full opacity
-                gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT); 
+                gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
 
-                // Issue the necessary commands to draw your scene here 
+                // Issue the necessary commands to draw your scene here
 
-                let scale_vector: glm::Vec3 = glm::vec3(1.0, 1.0, 1.0);
-                let camera_rotation_vector: glm::Vec3 = glm::vec3(0.0, 0.0, 0.0);
-                let direction_vector: glm::Vec3 = glm::vec3(0.0, 0.0, -6.0+5.0*elapsed.sin());
+                // let scale_vector: glm::Vec3 = glm::vec3(1.0, 1.0, 1.0);
 
-                
+                let direction_vector: glm::Vec3 = glm::vec3(0.0, 0.0, -6.0);
+
+
                 // let angle: f32 = 360.0f32.to_radians();
-                
+
                 //let mut identity: glm::Mat4 = glm::identity();
-                
-                let cam: glm::Mat4 =
+
+                let camera_perspective: glm::Mat4 =
                 glm::perspective(
-                    6.0/8.0,
-                    90.0,
+                    SCREEN_W as f32 / SCREEN_H as f32,
+                    90.0f32.to_radians(),
                     1.0,
                     100.0
                 );
-                
-                let transform_matrix: glm::Mat4 = cam * glm::translation(&direction_vector)*glm::rotation(10.0*elapsed, &glm::vec3(1.0, 0.0, 0.0)) * glm::scaling(&scale_vector);
+
+                // let transform_matrix: glm::Mat4 = cam * glm::translation(&direction_vector)*glm::rotation(10.0*elapsed, &glm::vec3(1.0, 0.0, 0.0)) * glm::scaling(&scale_vector);
+                let mut transform_matrix: glm::Mat4 = camera_perspective * glm::translation(&direction_vector);
+
+                transform_matrix = glm::translate(&transform_matrix, &glm::vec3(camera_properties.x, camera_properties.y, camera_properties.z));
+                transform_matrix = glm::rotate_y(&transform_matrix, camera_properties.yaw);
+                transform_matrix = glm::rotate_x(&transform_matrix, camera_properties.pitch);
+
                 gl::UniformMatrix4fv(5, 1, gl::FALSE, transform_matrix.as_ptr());
-                                
-                                
-                                
-                draw_scene(vertices.len()); //drawing the triangles now, this will draw all objects later
+
+                // println!("yaw: {}", camera_properties.yaw);
+
+                draw_scene(indices.len()); //drawing the triangles now, this will draw all objects later
                 //draw the elements mode: triangle, number of points/count: lenght of the indices, type and void* indices
 
             }
@@ -448,9 +590,9 @@ fn main() {
                     Escape => {
                         *control_flow = ControlFlow::Exit;
                     },
-                    Q => {
-                        *control_flow = ControlFlow::Exit;
-                    }
+                    // Q => {
+                    //     *control_flow = ControlFlow::Exit;
+                    // }
                     _ => { }
                 }
             },
