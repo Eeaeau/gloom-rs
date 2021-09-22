@@ -270,6 +270,24 @@ fn main() {
             0.0, 0.0, 1.0, 0.33
         ];
 
+        let transform_matrix: Vec<f32> = vec![
+            1.0, 0.0, 0.0, 0.0,
+            0.0, 1.0, 0.0, 0.0,
+            0.0, 0.0, 1.0, 0.0,
+            0.0, 0.0, 0.0, 1.0
+        ];
+        let identity: glm::Mat4 = glm::identity();
+        let test: glm::Mat4 = glm::mat4x4(
+            1.0, 0.0, 0.0, 0.0,
+            0.0, 1.0, 0.0, 0.0,
+            0.0, 0.0, 1.0, 0.0,
+            0.0, 0.0, 0.0, 1.0);
+
+        unsafe {
+
+            gl::UniformMatrix4fv(5, byte_size_of_array(&transform_matrix) as i32, gl::FALSE, glm::value_ptr(test));
+
+        }
 
         // Initiating the vao to the triangle that are getting drawed.
         let vao_id = unsafe{ initiate_vao(& vertices, & indices, & color) };

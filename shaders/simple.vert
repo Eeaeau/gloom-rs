@@ -1,6 +1,7 @@
 #version 450 core
 
 uniform layout(location = 4) float time;
+uniform layout(location = 5) mat4 transform_matrix;
 
 in vec3 position;
 
