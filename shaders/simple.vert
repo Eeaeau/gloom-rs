@@ -15,11 +15,18 @@ void main()
 {
     mat4 diagMatrix = mat4(1);
 
-    float oc = 1.0*sin(2*PI*0.5*time);
+    float oc = 0.5*sin(2*PI*0.5*time);
+
+    float a = 1.0;
+    float b = 0.0;
+    float c = 0.0;
+    float d = 0.0;
+    float f = 0.0;
+    float e = 1.0;
 
     mat4 random_matrix = mat4(
-        1.0+oc, 0.0, 0.0, 0.0,
-        0.0, 1.0-oc, 0.0, 0.0,
+        a, b, 0.0, c,
+        d, oc, 0.0, f,
         0.0, 0.0, 1.0, 0.0,
         0.0, 0.0, 0.0, 1.0
     );
