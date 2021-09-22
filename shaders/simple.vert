@@ -26,14 +26,14 @@ void main()
     float e = 1.0;
 
     mat4 random_matrix = mat4(
-        a, b, 0.0, c,
-        d, oc, 0.0, f,
+        a, b, 0.0, oc,
+        d, e, 0.0, f,
         0.0, 0.0, 1.0, 0.0,
         0.0, 0.0, 0.0, 1.0
     );
     // mat4 random_matrix = mat4(1);
 
-    gl_Position = random_matrix * vec4(position, 1.0f);
+    gl_Position = transform_matrix * vec4(position, 1.0f);
     // gl_Position = diagMatrix * position.;
 
     // when mirroring we played with these variables. But when changing position we had to change the rotation of the drawing. this is done in main.rs and with the function gl::FrontFace

@@ -3,8 +3,19 @@ use std::{ mem, ptr, os::raw::c_void };
 use std::thread;
 use std::sync::{Mutex, Arc, RwLock};
 
+// extra stuff
+// extern crate obj;
+// use std::fs::File;
+// use std::io::BufReader;
+// use obj::{load_obj, Obj};
+
+
+// use obj::{load_obj, Obj};
+
+
 mod shader;
 mod util;
+
 
 use glutin::event::{Event, WindowEvent, DeviceEvent, KeyboardInput, ElementState::{Pressed, Released}, VirtualKeyCode::{self, *}};
 use glutin::event_loop::ControlFlow;
@@ -159,7 +170,7 @@ fn main() {
         unsafe {
             gl::Enable(gl::DEPTH_TEST);
             gl::DepthFunc(gl::LESS);
-            gl::Enable(gl::CULL_FACE); //need to disable this to make mirroring to work, havent found a work around
+            // gl::Enable(gl::CULL_FACE); //need to disable this to make mirroring to work, havent found a work around
             //edit: By using gl::frontface we change the direction it is drawed.
             gl::Disable(gl::MULTISAMPLE);
             gl::Enable(gl::BLEND);
@@ -270,24 +281,17 @@ fn main() {
             0.0, 0.0, 1.0, 0.33
         ];
 
-        let transform_matrix: Vec<f32> = vec![
-            1.0, 0.0, 0.0, 0.0,
-            0.0, 1.0, 0.0, 0.0,
-            0.0, 0.0, 1.0, 0.0,
-            0.0, 0.0, 0.0, 1.0
-        ];
-        let identity: glm::Mat4 = glm::identity();
-        let test: glm::Mat4 = glm::mat4x4(
-            1.0, 0.0, 0.0, 0.0,
-            0.0, 1.0, 0.0, 0.0,
-            0.0, 0.0, 1.0, 0.0,
-            0.0, 0.0, 0.0, 1.0);
+        // let test: glm::Mat4 = glm::mat4x4(
+        //     1.0, 0.0, 0.0, 0.0,
+        //     0.0, 1.0, 0.0, 0.0,
+        //     0.0, 0.0, 1.0, 0.0,
+        //     0.0, 0.0, 0.0, 1.0);
 
-        unsafe {
+        // let input = BufReader::new(File::open("assets/teapot.obj")?);
+        // let teapot: Obj = load_obj(input)?;
 
-            gl::UniformMatrix4fv(5, byte_size_of_array(&transform_matrix) as i32, gl::FALSE, glm::value_ptr(test));
-
-        }
+        // let teapot = tobj::load_obj("assets/teapot.obj", tobj::LoadOptions::default()); 
+    
 
         // Initiating the vao to the triangle that are getting drawed.
         let vao_id = unsafe{ initiate_vao(& vertices, & indices, & color) };
@@ -357,10 +361,32 @@ fn main() {
 
             unsafe {
                 gl::ClearColor(0.76862745, 0.71372549, 0.94901961, 1.0); // moon raker, full opacity
-                gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
+                gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT); 
 
-                // Issue the necessary commands to draw your scene here
+                // Issue the necessary commands to draw your scene here 
 
+                let scale_vector: glm::Vec3 = glm::vec3(1.0, 1.0, 1.0);
+                let camera_rotation_vector: glm::Vec3 = glm::vec3(0.0, 0.0, 0.0);
+                let direction_vector: glm::Vec3 = glm::vec3(0.0, 0.0, -6.0+5.0*elapsed.sin());
+
+                
+                // let angle: f32 = 360.0f32.to_radians();
+                
+                //let mut identity: glm::Mat4 = glm::identity();
+                
+                let cam: glm::Mat4 =
+                glm::perspective(
+                    6.0/8.0,
+                    90.0,
+                    1.0,
+                    100.0
+                );
+                
+                let transform_matrix: glm::Mat4 = cam * glm::translation(&direction_vector)*glm::rotation(10.0*elapsed, &glm::vec3(1.0, 0.0, 0.0)) * glm::scaling(&scale_vector);
+                gl::UniformMatrix4fv(5, 1, gl::FALSE, transform_matrix.as_ptr());
+                                
+                                
+                                
                 draw_scene(vertices.len()); //drawing the triangles now, this will draw all objects later
                 //draw the elements mode: triangle, number of points/count: lenght of the indices, type and void* indices
 
