@@ -161,6 +161,7 @@ fn main() {
     // Make a reference of this vector to send to the render thread
     let pressed_keys = Arc::clone(&arc_pressed_keys);
 
+    #[derive(Clone)]
     struct Camera {
         /// location in x-direction
         x: f32,
@@ -329,6 +330,7 @@ fn main() {
         );
         assert!(teapot.is_ok());
         let (models, materials) = teapot.expect("Failed to load OBJ file");
+        
 
         // Materials might report a separate loading error if the MTL file wasn't found.
         // If you don't need the materials, you can generate a default here and use that
@@ -371,12 +373,16 @@ fn main() {
                 );
             }
             for v in &mesh.positions {
+                
 
                 obj_vertices.push(*v);
             }
             for i in &mesh.indices {
+                //println!("{}", *i);
                 obj_indices.push(*i);
             }
+
+            
             // for i in &mesh.vertex_components {
             //     obj_indices.push(*i);
             // }
@@ -386,8 +392,8 @@ fn main() {
         // ------------------- end OBJ import ------------------- //
 
         // Initiating the vao to the triangle that are getting drawed.
-        let vao_id = unsafe{ initiate_vao(& vertices, & indices, & color) };
-
+        //let vao_id = unsafe{ initiate_vao(& vertices, & indices, & color) };
+        let vao_id = unsafe{ initiate_vao(&obj_vertices, &obj_indices, & color) };
         // Basic usage of shader helper:
         // The example code below returns a shader object, which contains the field `.program_id`.
         // The snippet is not enough to do the assignment, and will need to be modified (outside of
@@ -410,6 +416,17 @@ fn main() {
         // unsafe {
         //     gl::UseProgram(0);
         // }
+        let camera_properties_default = Camera {
+            x: 1.0,
+            y: 1.0,
+            // Start with -1 since view-box is from -1 to 1, this way we see the scene at the beginning
+            z: -1.0,
+            movement_speed: 2.0,
+            yaw: 0.0,
+            pitch: 0.0,
+            roll: 0.0,
+            look_sensitivity: 0.008
+        };
 
         let mut camera_properties = Camera {
             x: 1.0,
@@ -469,6 +486,17 @@ fn main() {
                         VirtualKeyCode::E => {
                             camera_properties.y -= delta_time * camera_properties.movement_speed;
                         },
+                        VirtualKeyCode::R => {
+                            camera_properties = camera_properties_default.clone();
+                            camera_properties.x = 1.0; //try to find a nicer way by using the default struct made
+                            camera_properties.y = 1.0;
+                            camera_properties.z = -1.0;
+                            camera_properties.movement_speed = 2.0;
+                            camera_properties.yaw = 0.0;
+                            camera_properties.pitch = 0.0;
+                            camera_properties.roll = 0.0;
+                            camera_properties.look_sensitivity = 0.098;
+                        },
 
                         _ => { }
                     }
@@ -519,17 +547,18 @@ fn main() {
                 );
 
                 // let transform_matrix: glm::Mat4 = cam * glm::translation(&direction_vector)*glm::rotation(10.0*elapsed, &glm::vec3(1.0, 0.0, 0.0)) * glm::scaling(&scale_vector);
-                let mut transform_matrix: glm::Mat4 = camera_perspective * glm::translation(&direction_vector);
+                let mut transform_matrix: glm::Mat4 = glm::translation(&direction_vector);
 
                 transform_matrix = glm::translate(&transform_matrix, &glm::vec3(camera_properties.x, camera_properties.y, camera_properties.z));
                 transform_matrix = glm::rotate_y(&transform_matrix, camera_properties.yaw);
                 transform_matrix = glm::rotate_x(&transform_matrix, camera_properties.pitch);
+                transform_matrix = camera_perspective*transform_matrix; 
 
                 gl::UniformMatrix4fv(5, 1, gl::FALSE, transform_matrix.as_ptr());
 
                 // println!("yaw: {}", camera_properties.yaw);
 
-                draw_scene(indices.len()); //drawing the triangles now, this will draw all objects later
+                draw_scene(obj_indices.len()); //drawing the triangles now, this will draw all objects later
                 //draw the elements mode: triangle, number of points/count: lenght of the indices, type and void* indices
 
             }
