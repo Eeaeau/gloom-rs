@@ -392,8 +392,8 @@ fn main() {
         // ------------------- end OBJ import ------------------- //
 
         // Initiating the vao to the triangle that are getting drawed.
-        //let vao_id = unsafe{ initiate_vao(& vertices, & indices, & color) };
-        let vao_id = unsafe{ initiate_vao(&obj_vertices, &obj_indices, & color) };
+        let vao_id = unsafe{ initiate_vao(& vertices, & indices, & color) };
+        //let vao_id = unsafe{ initiate_vao(&obj_vertices, &obj_indices, & color) };
         // Basic usage of shader helper:
         // The example code below returns a shader object, which contains the field `.program_id`.
         // The snippet is not enough to do the assignment, and will need to be modified (outside of
@@ -473,12 +473,12 @@ fn main() {
                             camera_properties.x += delta_time * camera_properties.yaw.sin() * camera_properties.movement_speed;
                         },
                         VirtualKeyCode::A => {
-                            camera_properties.z += delta_time * camera_properties.yaw.cos() * camera_properties.movement_speed;
-                            camera_properties.x += delta_time * camera_properties.yaw.sin() * camera_properties.movement_speed;
+                            camera_properties.x += delta_time * camera_properties.yaw.cos() * camera_properties.movement_speed;
+                            camera_properties.z += delta_time * camera_properties.yaw.sin() * camera_properties.movement_speed;
                         },
                         VirtualKeyCode::D => {
-                            camera_properties.z -= delta_time * camera_properties.yaw.cos() * camera_properties.movement_speed;
-                            camera_properties.x -= delta_time * camera_properties.yaw.sin() * camera_properties.movement_speed;
+                            camera_properties.x -= delta_time * camera_properties.yaw.cos() * camera_properties.movement_speed;
+                            camera_properties.z -= delta_time * camera_properties.yaw.sin() * camera_properties.movement_speed;
                         },
                         VirtualKeyCode::Q => {
                             camera_properties.y += delta_time * camera_properties.movement_speed;
@@ -486,16 +486,14 @@ fn main() {
                         VirtualKeyCode::E => {
                             camera_properties.y -= delta_time * camera_properties.movement_speed;
                         },
+                        VirtualKeyCode::F => {
+                            camera_properties.roll += delta_time * camera_properties.movement_speed;
+                        },
+                        VirtualKeyCode::C => {
+                            camera_properties.roll -= delta_time * camera_properties.movement_speed;
+                        },
                         VirtualKeyCode::R => {
                             camera_properties = camera_properties_default.clone();
-                            camera_properties.x = 1.0; //try to find a nicer way by using the default struct made
-                            camera_properties.y = 1.0;
-                            camera_properties.z = -1.0;
-                            camera_properties.movement_speed = 2.0;
-                            camera_properties.yaw = 0.0;
-                            camera_properties.pitch = 0.0;
-                            camera_properties.roll = 0.0;
-                            camera_properties.look_sensitivity = 0.098;
                         },
 
                         _ => { }
@@ -513,7 +511,7 @@ fn main() {
                 // }
 
                 camera_properties.pitch += delta.1 * camera_properties.look_sensitivity;
-                camera_properties.pitch = clamp(camera_properties.pitch, -90.0f32.to_radians(), 90.0f32.to_radians());
+                camera_properties.pitch = clamp(camera_properties.pitch, -90.0f32.to_radians(), 90.0f32.to_radians()); //this sets a limit on the movement
 
                 camera_properties.yaw += delta.0 * camera_properties.look_sensitivity;
 
@@ -547,18 +545,22 @@ fn main() {
                 );
 
                 // let transform_matrix: glm::Mat4 = cam * glm::translation(&direction_vector)*glm::rotation(10.0*elapsed, &glm::vec3(1.0, 0.0, 0.0)) * glm::scaling(&scale_vector);
+
+                //handling for key and mouse input
                 let mut transform_matrix: glm::Mat4 = glm::translation(&direction_vector);
 
                 transform_matrix = glm::translate(&transform_matrix, &glm::vec3(camera_properties.x, camera_properties.y, camera_properties.z));
                 transform_matrix = glm::rotate_y(&transform_matrix, camera_properties.yaw);
                 transform_matrix = glm::rotate_x(&transform_matrix, camera_properties.pitch);
+                transform_matrix = glm::rotate_z(&transform_matrix, camera_properties.roll);
                 transform_matrix = camera_perspective*transform_matrix; 
 
                 gl::UniformMatrix4fv(5, 1, gl::FALSE, transform_matrix.as_ptr());
 
                 // println!("yaw: {}", camera_properties.yaw);
 
-                draw_scene(obj_indices.len()); //drawing the triangles now, this will draw all objects later
+                draw_scene(indices.len()); //drawing the triangles now, this will draw all objects later
+                //draw_scene(obj_indices.len());
                 //draw the elements mode: triangle, number of points/count: lenght of the indices, type and void* indices
 
             }
