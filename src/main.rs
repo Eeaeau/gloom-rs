@@ -3,16 +3,7 @@ use std::{ mem, ptr, os::raw::c_void };
 use std::thread;
 use std::sync::{Mutex, Arc, RwLock};
 
-// extra stuff
-// extern crate obj;
-// use std::fs::File;
-// use std::io::BufReader;
-// use obj::{load_obj, Obj};
-
-
-// use obj::{load_obj, Obj};
-use std::path::Path;
-use tobj;
+use tobj; // lib for importing .OBJ 3d objects
 
 mod shader;
 mod util;
@@ -210,67 +201,6 @@ fn main() {
 
         // == // Set up your VAO here
 
-        // --- TASK 1 --- //
-
-        //triangles data
-
-        //1 triangle
-        /* let vertices: Vec<f32> = vec![-1.0, -1.0, 0.0, 1.0, -1.0, 0.0, 0.0, 1.0, 0.0];
-        let indices: Vec<u32> = vec![0, 1, 2]; */
-
-        //5 triangles, in this case the z axis will always be 0
-        /* let vertices: Vec<f32> = vec![
-            -1.0, -1.0, 0.0,  // 0
-            -1.0, 1.0, 0.0,   // 1
-            -0.5, 0.0, 0.0,   // 2
-            0.0, 1.0, 0.0,    // 3
-            1.0, 1.0, 0.0,    // 4
-            0.0, -1.0, 0.0,   // 5
-            0.0, 0.5, 0.0,    // 6
-            0.0, -0.5, 0.0,   // 7
-            0.5, 0.0, 0.0,     // 8
-            1.0, -1.0, 0.0    // 9
-        ]; */
-        //remember to draw the correct order. right corner->top-> left corner
-        /* let indices: Vec<u32> = vec![
-            5, 2, 0,
-            1, 2, 3,
-            9, 8, 5,
-            3, 8, 4,
-            7, 8, 6,
-            6, 2, 7
-        ]; */
-
-
-        // --- TASK 2 --- //
-
-        // task 2a
-        // == // Set up your vao here
-        // unsafe {
-        //     let draw_vao: u32 = 0;
-        //     gl::BindVertexArray(draw_vao);
-        //     let vao = initiate_vao(& v1, & indices);
-        // }
-
-        /* let vertices: Vec<f32> = vec![
-            0.6, -0.8, 1.0,  // 0
-            0.0, 0.4, 0.0,   // 1
-            -0.8, -0.2, 1.0   // 2
-        ];
-
-        let indices: Vec<u32> = vec![
-            0, 1, 2
-        ]; */
-
-        // task 2b
-
-        /* let indices: Vec<u32> = vec![
-            2, 1, 0
-        ];*/
-
-        // task 2d
-        // changing the simple.vert files positions
-
         let vertices: Vec<f32> = vec![
             0.5, -0.5, -0.9,  // 0
             -0.5, -0.5, -0.9,   // 1
@@ -305,12 +235,6 @@ fn main() {
             0.0, 0.0, 1.0, 0.33
         ];
 
-        // let test: glm::Mat4 = glm::mat4x4(
-        //     1.0, 0.0, 0.0, 0.0,
-        //     0.0, 1.0, 0.0, 0.0,
-        //     0.0, 0.0, 1.0, 0.0,
-        //     0.0, 0.0, 0.0, 1.0);
-
         // let input = BufReader::new(File::open("assets/teapot.obj")?);
         // let teapot: Obj = load_obj(input)?;
 
@@ -330,7 +254,7 @@ fn main() {
         );
         assert!(teapot.is_ok());
         let (models, materials) = teapot.expect("Failed to load OBJ file");
-        
+
 
         // Materials might report a separate loading error if the MTL file wasn't found.
         // If you don't need the materials, you can generate a default here and use that
@@ -373,7 +297,7 @@ fn main() {
                 );
             }
             for v in &mesh.positions {
-                
+
 
                 obj_vertices.push(*v);
             }
@@ -381,11 +305,6 @@ fn main() {
                 //println!("{}", *i);
                 obj_indices.push(*i);
             }
-
-            
-            // for i in &mesh.vertex_components {
-            //     obj_indices.push(*i);
-            // }
         }
 
 
@@ -416,6 +335,7 @@ fn main() {
         // unsafe {
         //     gl::UseProgram(0);
         // }
+
         let camera_properties_default = Camera {
             x: 1.0,
             y: 1.0,
@@ -440,8 +360,6 @@ fn main() {
             look_sensitivity: 0.008
         };
 
-
-
         // Used to demonstrate keyboard handling -- feel free to remove
         let mut _arbitrary_number = 0.0;
 
@@ -463,14 +381,17 @@ fn main() {
             if let Ok(keys) = pressed_keys.lock() {
                 for key in keys.iter() {
                     match key {
-                        // sin and cos is used to take current orientation into account for movement
+                        // sin and cos is used to take current yaw into account for movement
                         VirtualKeyCode::W => {
+                            // camera_properties.z += delta_time * camera_properties.yaw.cos() * camera_properties.movement_speed;
                             camera_properties.z += delta_time * camera_properties.yaw.cos() * camera_properties.movement_speed;
                             camera_properties.x -= delta_time * camera_properties.yaw.sin() * camera_properties.movement_speed;
+                            camera_properties.y += delta_time * camera_properties.pitch.sin() * camera_properties.movement_speed;
                         },
                         VirtualKeyCode::S => {
                             camera_properties.z -= delta_time * camera_properties.yaw.cos() * camera_properties.movement_speed;
                             camera_properties.x += delta_time * camera_properties.yaw.sin() * camera_properties.movement_speed;
+                            camera_properties.y -= delta_time * camera_properties.pitch.sin() * camera_properties.movement_speed;
                         },
                         VirtualKeyCode::A => {
                             camera_properties.x += delta_time * camera_properties.yaw.cos() * camera_properties.movement_speed;
@@ -503,20 +424,20 @@ fn main() {
             // Handle mouse movement. delta contains the x and y movement of the mouse since last frame in pixels
             if let Ok(mut delta) = mouse_delta.lock() {
 
-                // if camera_properties.pitch < 90.0f32.to_radians() {
-                //     camera_properties.pitch += delta.1.abs() * camera_properties.look_sensitivity;
-                // }
-                // if camera_properties.pitch > -90.0f32.to_radians() {
-                //     camera_properties.pitch -= delta.1.abs() * camera_properties.look_sensitivity;
-                // }
+                let mut look_up_down = glm::vec2(camera_properties.yaw.cos(), camera_properties.yaw.sin());
+                look_up_down = glm::normalize(&look_up_down);
+                camera_properties.pitch += delta.1 * camera_properties.look_sensitivity * look_up_down[0];
+                camera_properties.roll += delta.1 * camera_properties.look_sensitivity * look_up_down[1];
+                // limit pich to viewing somewher between top and bottom
+                camera_properties.pitch = clamp(camera_properties.pitch, -90.0f32.to_radians(), 90.0f32.to_radians());
 
-                camera_properties.pitch += delta.1 * camera_properties.look_sensitivity;
-                camera_properties.pitch = clamp(camera_properties.pitch, -90.0f32.to_radians(), 90.0f32.to_radians()); //this sets a limit on the movement
+
 
                 camera_properties.yaw += delta.0 * camera_properties.look_sensitivity;
 
                 println!("mouse x: {}",  delta.0);
                 println!("mouse y: {}",  delta.1);
+                println!("yaw: {}",  camera_properties.yaw);
 
                 *delta = (0.0, 0.0);
             }
@@ -529,12 +450,9 @@ fn main() {
 
                 // let scale_vector: glm::Vec3 = glm::vec3(1.0, 1.0, 1.0);
 
-                let direction_vector: glm::Vec3 = glm::vec3(0.0, 0.0, -6.0);
-
-
                 // let angle: f32 = 360.0f32.to_radians();
 
-                //let mut identity: glm::Mat4 = glm::identity();
+                let direction_vector: glm::Vec3 = glm::vec3(0.0, 0.0, -6.0);
 
                 let camera_perspective: glm::Mat4 =
                 glm::perspective(
@@ -544,16 +462,16 @@ fn main() {
                     100.0
                 );
 
-                // let transform_matrix: glm::Mat4 = cam * glm::translation(&direction_vector)*glm::rotation(10.0*elapsed, &glm::vec3(1.0, 0.0, 0.0)) * glm::scaling(&scale_vector);
-
-                //handling for key and mouse input
                 let mut transform_matrix: glm::Mat4 = glm::translation(&direction_vector);
 
-                transform_matrix = glm::translate(&transform_matrix, &glm::vec3(camera_properties.x, camera_properties.y, camera_properties.z));
+                // update camera positioning and orientation
+                let move_vector = glm::vec3(camera_properties.x, camera_properties.y, camera_properties.z);
+                // move_vector = glm::normalize(&move_vector);
+                transform_matrix = glm::translate(&transform_matrix, &move_vector);
                 transform_matrix = glm::rotate_y(&transform_matrix, camera_properties.yaw);
                 transform_matrix = glm::rotate_x(&transform_matrix, camera_properties.pitch);
                 transform_matrix = glm::rotate_z(&transform_matrix, camera_properties.roll);
-                transform_matrix = camera_perspective*transform_matrix; 
+                transform_matrix = camera_perspective*transform_matrix;
 
                 gl::UniformMatrix4fv(5, 1, gl::FALSE, transform_matrix.as_ptr());
 

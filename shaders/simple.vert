@@ -8,7 +8,6 @@ in vec3 position;
 in layout(location=2) vec4 vertexColor;
 
 out vec4 fragmentColor;
-// layout(location = 1) in vec3 vertexColor;
 
 #define PI 3.14
 
