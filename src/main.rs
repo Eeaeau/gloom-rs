@@ -7,6 +7,8 @@ use tobj; // lib for importing .OBJ 3d objects
 
 mod shader;
 mod util;
+//mod resources;
+mod mesh;
 
 
 use glutin::event::{Event, WindowEvent, DeviceEvent, KeyboardInput, ElementState::{Pressed, Released}, VirtualKeyCode::{self, *}};
@@ -237,6 +239,14 @@ fn main() {
 
         // let input = BufReader::new(File::open("assets/teapot.obj")?);
         // let teapot: Obj = load_obj(input)?;
+        //-----------------import obj ass3------------------//
+
+        let terrain = mesh::Terrain::load("resources/lunarsurface.obj");
+
+        
+
+
+        //-----------------end import obj ass3------------------//
 
 
 
@@ -311,13 +321,14 @@ fn main() {
         // ------------------- end OBJ import ------------------- //
 
         // Initiating the vao to the triangle that are getting drawed.
-        let vao_id = unsafe{ initiate_vao(& vertices, & indices, & color) };
+        //let vao_id = unsafe{ initiate_vao(& vertices, & indices, & color) };
+        let vao_id = unsafe{ initiate_vao(& terrain.vertices, & terrain.indices, & terrain.colors) };
         //let vao_id = unsafe{ initiate_vao(&obj_vertices, &obj_indices, & color) };
         // Basic usage of shader helper:
         // The example code below returns a shader object, which contains the field `.program_id`.
         // The snippet is not enough to do the assignment, and will need to be modified (outside of
         // just using the correct path), but it only needs to be called once
-        //
+        //  
         //     shader::ShaderBuilder::new()
         //        .attach_file("./path/to/shader.file")
         //        .link();
@@ -453,13 +464,21 @@ fn main() {
                 // let angle: f32 = 360.0f32.to_radians();
 
                 let direction_vector: glm::Vec3 = glm::vec3(0.0, 0.0, -6.0);
-
-                let camera_perspective: glm::Mat4 =
+                //for ass2
+                /* let camera_perspective: glm::Mat4 =
                 glm::perspective(
                     SCREEN_W as f32 / SCREEN_H as f32,
                     90.0f32.to_radians(),
                     1.0,
                     100.0
+                ); */
+                //need to increase the farplane for assignment 3
+                let camera_perspective: glm::Mat4 =
+                glm::perspective(
+                    SCREEN_W as f32 / SCREEN_H as f32,
+                    90.0f32.to_radians(),
+                    1.0,
+                    1000.0
                 );
 
                 let mut transform_matrix: glm::Mat4 = glm::translation(&direction_vector);
@@ -477,8 +496,8 @@ fn main() {
 
                 // println!("yaw: {}", camera_properties.yaw);
 
-                draw_scene(indices.len()); //drawing the triangles now, this will draw all objects later
-                //draw_scene(obj_indices.len());
+                //draw_scene(indices.len()); //drawing the triangles now, this will draw all objects later
+                draw_scene(terrain.indices.len());
                 //draw the elements mode: triangle, number of points/count: lenght of the indices, type and void* indices
 
             }
