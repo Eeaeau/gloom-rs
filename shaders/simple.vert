@@ -2,18 +2,19 @@
 
 uniform layout(location = 4) float time;
 uniform layout(location = 5) mat4 transform_matrix;
-
+//layout(location = 2) in vec4 color; 
 in vec3 position;
-
 in layout(location=2) vec4 vertexColor;
+in layout(location=3) vec3 normals;
 
-out vec4 fragmentColor;
-
+out vec3 vertexNormals;
+out vec4 fragmentColor; //mb change name for this
+//out vec4 color_vert;
 #define PI 3.14
 
 void main()
 {
-    mat4 diagMatrix = mat4(1);
+    /* mat4 diagMatrix = mat4(1);
 
     float oc = 0.5*sin(2*PI*0.5*time);
 
@@ -22,14 +23,14 @@ void main()
     float c = 0.0;
     float d = 0.0;
     float f = 0.0;
-    float e = 1.0;
+    float e = 1.0; */
 
-    mat4 random_matrix = mat4(
+    /* mat4 random_matrix = mat4(
         a, b, 0.0, oc,
         d, e, 0.0, f,
         0.0, 0.0, 1.0, 0.0,
         0.0, 0.0, 0.0, 1.0
-    );
+    ); */
     // mat4 random_matrix = mat4(1);
 
     gl_Position = transform_matrix * vec4(position, 1.0f);
@@ -43,4 +44,5 @@ void main()
     //     1.0f);
 
     fragmentColor = vertexColor;
+    vertexNormals = normals;
 }

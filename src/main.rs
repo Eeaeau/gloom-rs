@@ -54,7 +54,7 @@ fn clamp<T: PartialOrd>(input: T, min: T, max: T) -> T {
 
 // == // Modify and complete the function below for the first task
 // unsafe fn FUNCTION_NAME(ARGUMENT_NAME: &Vec<f32>, ARGUMENT_NAME: &Vec<u32>) -> u32 { }
-unsafe fn initiate_vao(vertices: &Vec<f32>, indices: &Vec<u32>, color: &Vec<f32>) -> u32 {
+unsafe fn initiate_vao(vertices: &Vec<f32>, indices: &Vec<u32>, color: &Vec<f32>, normals: &Vec<f32>) -> u32 {
 
     // Variables used for binding
     let mut vao: u32 = 0; // this is where the Vertex array object (vao) id is stored.
@@ -105,6 +105,8 @@ unsafe fn initiate_vao(vertices: &Vec<f32>, indices: &Vec<u32>, color: &Vec<f32>
 
     let mut color_index: u32 = 0;
     let color_buffer_id: u32 = 2;
+    let  normal_index: u32 = 3;
+    let mut normal_buffer_id: u32 = 0;
 
     gl::GenBuffers(1, &mut color_index);
     assert_ne!(color_index, 0); // make sure 0 is not returned
@@ -126,6 +128,27 @@ unsafe fn initiate_vao(vertices: &Vec<f32>, indices: &Vec<u32>, color: &Vec<f32>
         byte_size_of_array(color),
         pointer_to_array(color),
         gl::STATIC_DRAW);
+
+    gl::GenBuffers(1, &mut normal_buffer_id);
+    assert_ne!(normal_buffer_id, 0); // make sure 0 is not returned
+    gl::BindBuffer(gl::ARRAY_BUFFER, normal_buffer_id);
+
+    gl::BufferData(
+        gl::ARRAY_BUFFER,
+        byte_size_of_array(normals),
+        pointer_to_array(normals),
+        gl::STATIC_DRAW);
+    
+    gl::EnableVertexAttribArray(normal_index);
+
+    gl::VertexAttribPointer(
+        normal_index,
+        3, //xyz
+        gl::FLOAT,
+        gl::FALSE,
+        0,
+        ptr::null());
+
 
     return vao
 }
@@ -322,7 +345,7 @@ fn main() {
 
         // Initiating the vao to the triangle that are getting drawed.
         //let vao_id = unsafe{ initiate_vao(& vertices, & indices, & color) };
-        let vao_id = unsafe{ initiate_vao(& terrain.vertices, & terrain.indices, & terrain.colors) };
+        let vao_id = unsafe{ initiate_vao(& terrain.vertices, & terrain.indices, & terrain.colors, & terrain.normals) };
         //let vao_id = unsafe{ initiate_vao(&obj_vertices, &obj_indices, & color) };
         // Basic usage of shader helper:
         // The example code below returns a shader object, which contains the field `.program_id`.

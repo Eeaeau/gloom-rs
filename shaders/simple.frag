@@ -4,6 +4,7 @@ uniform layout(location = 4) float time;
 
 out vec4 color;
 in vec4 fragmentColor;
+in vec3 vertexNormals;
 
 // Logic for deciding checker block
 void checkarboard(in float coordinate, in uint range, out bool result) {
@@ -43,6 +44,9 @@ void main()
     //     else
     //         color = vec4(0.0f, 0.0f, 0.0f, 1.0f); // black
 
-    color = fragmentColor;
+    //color = fragmentColor;
+    vec3 lightDirection = normalize(vec3(0.8, -0.5, 0.6));
+
+    color = vec4(fragmentColor.xyz * max(0,dot(vertexNormals, -lightDirection)), fragmentColor.w);
 
 }
