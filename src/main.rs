@@ -358,6 +358,7 @@ fn main() {
         let vao_heli_main_rotor = unsafe{ initiate_vao(& helicopter.main_rotor.vertices, & helicopter.main_rotor.indices, & helicopter.main_rotor.colors, & helicopter.main_rotor.normals) };
         let vao_heli_tail_rotor = unsafe{ initiate_vao(& helicopter.tail_rotor.vertices, & helicopter.tail_rotor.indices, & helicopter.tail_rotor.colors, & helicopter.tail_rotor.normals) };
 
+        
 
 
 
@@ -537,10 +538,15 @@ fn main() {
 
                 //draw_scene(indices.len()); //drawing the triangles now, this will draw all objects later
                 draw_scene(terrain.indices.len());
+                gl::BindVertexArray(vao_heli_body);
+                gl::BindVertexArray(vao_heli_door);
+                gl::BindVertexArray(vao_heli_main_rotor);
+                gl::BindVertexArray(vao_heli_tail_rotor);
+                
 
                 //do i have to bind something?
-                /* draw_scene(helicopter.body.indices.len());
-                draw_scene(helicopter.door.indices.len());
+                draw_scene(helicopter.body.indices.len());
+                /* draw_scene(helicopter.door.indices.len());
                 draw_scene(helicopter.main_rotor.indices.len());
                 draw_scene(helicopter.tail_rotor.indices.len()); */
                 //draw the elements mode: triangle, number of points/count: lenght of the indices, type and void* indices
