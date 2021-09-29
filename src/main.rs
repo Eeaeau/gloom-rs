@@ -266,10 +266,14 @@ fn main() {
 
         let terrain = mesh::Terrain::load("resources/lunarsurface.obj");
 
+        let helicopter = mesh::Helicopter::load("resources/helicopter.obj");
+
         
 
 
         //-----------------end import obj ass3------------------//
+
+        
 
 
 
@@ -345,7 +349,19 @@ fn main() {
 
         // Initiating the vao to the triangle that are getting drawed.
         //let vao_id = unsafe{ initiate_vao(& vertices, & indices, & color) };
-        let vao_id = unsafe{ initiate_vao(& terrain.vertices, & terrain.indices, & terrain.colors, & terrain.normals) };
+        let vao_terrain_id = unsafe{ initiate_vao(& terrain.vertices, & terrain.indices, & terrain.colors, & terrain.normals) };
+
+
+        //------------------- vaos for helicopter----------------------// //should make this process easier
+        let vao_heli_body = unsafe{ initiate_vao(& helicopter.body.vertices, & helicopter.body.indices, & helicopter.body.colors, & helicopter.body.normals) };
+        let vao_heli_door = unsafe{ initiate_vao(& helicopter.door.vertices, & helicopter.door.indices, & helicopter.door.colors, & helicopter.door.normals) };
+        let vao_heli_main_rotor = unsafe{ initiate_vao(& helicopter.main_rotor.vertices, & helicopter.main_rotor.indices, & helicopter.main_rotor.colors, & helicopter.main_rotor.normals) };
+        let vao_heli_tail_rotor = unsafe{ initiate_vao(& helicopter.tail_rotor.vertices, & helicopter.tail_rotor.indices, & helicopter.tail_rotor.colors, & helicopter.tail_rotor.normals) };
+
+
+
+
+        //------------------- end vaos for helicopter-------------------//
         //let vao_id = unsafe{ initiate_vao(&obj_vertices, &obj_indices, & color) };
         // Basic usage of shader helper:
         // The example code below returns a shader object, which contains the field `.program_id`.
@@ -521,6 +537,12 @@ fn main() {
 
                 //draw_scene(indices.len()); //drawing the triangles now, this will draw all objects later
                 draw_scene(terrain.indices.len());
+
+                //do i have to bind something?
+                /* draw_scene(helicopter.body.indices.len());
+                draw_scene(helicopter.door.indices.len());
+                draw_scene(helicopter.main_rotor.indices.len());
+                draw_scene(helicopter.tail_rotor.indices.len()); */
                 //draw the elements mode: triangle, number of points/count: lenght of the indices, type and void* indices
 
             }
