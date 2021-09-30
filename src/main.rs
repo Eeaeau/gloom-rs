@@ -9,8 +9,10 @@ mod shader;
 mod util;
 //mod resources;
 mod mesh;
+mod scene_graph;
 
 
+use scene_graph::SceneNode;
 use glutin::event::{Event, WindowEvent, DeviceEvent, KeyboardInput, ElementState::{Pressed, Released}, VirtualKeyCode::{self, *}};
 use glutin::event_loop::ControlFlow;
 
@@ -153,9 +155,28 @@ unsafe fn initiate_vao(vertices: &Vec<f32>, indices: &Vec<u32>, color: &Vec<f32>
     return vao
 }
 
-unsafe fn draw_scene(count: usize) {
+/* unsafe fn draw_scene(vao: u32, count: usize) {
     gl::FrontFace(gl::CW); //CCW for counter clockwise, CW for Clockwise
+    gl::BindVertexArray(vao);
     gl::DrawElements(gl::TRIANGLES, count as i32, gl::UNSIGNED_INT, ptr::null()); // TRIANGLE_STRIP can be used to easier build up geometry
+}
+ */
+
+unsafe fn draw_scene(node: &scene_graph::SceneNode,
+    view_projection_matrix: &glm::Mat4) {
+    // Check if node is drawable, set uniforms, draw
+    let mut count = 0;
+    if node.index_count != -1{
+        gl::BindVertexArray(node.vao_id);
+        gl::UniformMatrix4fv(5, 1, gl::FALSE, (view_projection_matrix*node.current_transformation_matrix).as_ptr());
+        gl::DrawElements(gl::TRIANGLES, node.index_count as i32, gl::UNSIGNED_INT, ptr::null());
+
+        
+    }
+    // Recurse
+    for &child in &node.children {
+        draw_scene(&*child, view_projection_matrix);
+    }
 }
 
 fn main() {
@@ -494,10 +515,31 @@ fn main() {
             }
 
             unsafe {
-                gl::ClearColor(0.76862745, 0.71372549, 0.94901961, 1.0); // moon raker, full opacity
+                //gl::ClearColor(0.76862745, 0.71372549, 0.94901961, 1.0); // moon raker, full opacity
+                gl::ClearColor(0.0, 0.0, 0.0, 1.0);
                 gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
 
                 // Issue the necessary commands to draw your scene here
+                let mut scene_root = SceneNode::new();
+                let mut terrain_node = SceneNode::from_vao(vao_terrain_id, terrain.index_count);
+                let mut heli_root_node = SceneNode::new();
+                let mut heli_body_node = SceneNode::from_vao(vao_heli_body, helicopter.body.index_count);
+                let mut heli_door_node = SceneNode::from_vao(vao_heli_door, helicopter.door.index_count);
+                let mut heli_main_rotor_node = SceneNode::from_vao(vao_heli_main_rotor, helicopter.main_rotor.index_count);
+                let mut heli_tail_rotor_node = SceneNode::from_vao(vao_heli_tail_rotor, helicopter.tail_rotor.index_count);
+
+
+                heli_root_node.add_child(&heli_body_node);
+                heli_root_node.add_child(&heli_door_node);
+                heli_root_node.add_child(&heli_main_rotor_node);
+                heli_root_node.add_child(&heli_tail_rotor_node);
+                terrain_node.add_child(&heli_root_node);
+                scene_root.add_child(&terrain_node);
+
+
+            
+
+                
 
                 // let scale_vector: glm::Vec3 = glm::vec3(1.0, 1.0, 1.0);
 
@@ -532,23 +574,24 @@ fn main() {
                 transform_matrix = glm::rotate_z(&transform_matrix, camera_properties.roll);
                 transform_matrix = camera_perspective*transform_matrix;
 
-                gl::UniformMatrix4fv(5, 1, gl::FALSE, transform_matrix.as_ptr());
+                //gl::UniformMatrix4fv(5, 1, gl::FALSE, transform_matrix.as_ptr());
 
                 // println!("yaw: {}", camera_properties.yaw);
 
-                //draw_scene(indices.len()); //drawing the triangles now, this will draw all objects later
-                draw_scene(terrain.indices.len());
-                gl::BindVertexArray(vao_heli_body);
-                gl::BindVertexArray(vao_heli_door);
-                gl::BindVertexArray(vao_heli_main_rotor);
-                gl::BindVertexArray(vao_heli_tail_rotor);
-                
+                draw_scene(&scene_root, &transform_matrix);
 
+                //draw_scene(indices.len()); //drawing the triangles now, this will draw all objects later
+                /* draw_scene(vao_terrain_id, terrain.indices.len());
+                draw_scene(vao_heli_body, helicopter.body.indices.len());
+                draw_scene(vao_heli_door, helicopter.door.indices.len());
+                draw_scene(vao_heli_main_rotor, helicopter.main_rotor.indices.len());
+                draw_scene(vao_heli_tail_rotor, helicopter.tail_rotor.indices.len());
+ */
                 //do i have to bind something?
-                draw_scene(helicopter.body.indices.len());
-                /* draw_scene(helicopter.door.indices.len());
-                draw_scene(helicopter.main_rotor.indices.len());
-                draw_scene(helicopter.tail_rotor.indices.len()); */
+                /*
+                
+                
+                 */
                 //draw the elements mode: triangle, number of points/count: lenght of the indices, type and void* indices
 
             }
