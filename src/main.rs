@@ -181,6 +181,36 @@ unsafe fn draw_scene(node: &scene_graph::SceneNode,
     }
 }
 
+unsafe fn update_node_transformations(node: &mut scene_graph::SceneNode,
+    transformation_so_far: &glm::Mat4) {
+    // Construct the correct transformation matrix
+    // let mut trans: glm::Mat4 = glm::identity();
+
+    // let mut transform_matrix: glm::Mat4 = glm::translation(& node.position);
+    let mut transform_matrix: glm::Mat4 = *transformation_so_far;
+    // let mut transform_matrix: glm::Mat4 = glm::identity();
+    transform_matrix = glm::translate(&transform_matrix, &node.position);
+
+    transform_matrix = glm::translate(&transform_matrix, &node.reference_point);
+
+    transform_matrix = glm::rotate_y(&transform_matrix, node.rotation.x);
+    transform_matrix = glm::rotate_x(&transform_matrix, node.rotation.y);
+    transform_matrix = glm::rotate_z(&transform_matrix, node.rotation.z);
+    transform_matrix = glm::scale(& transform_matrix, &node.scale);
+
+    transform_matrix = glm::translate(&transform_matrix, &-node.reference_point);
+
+
+    // Update the node's transformation matrix
+    node.current_transformation_matrix = transform_matrix;
+    // Recurse
+    for &child in &node.children {
+        update_node_transformations(&mut *child,
+        &node.current_transformation_matrix);
+    }
+}
+
+
 fn main() {
     // Set up the necessary objects to deal with windows and event handling
     let el = glutin::event_loop::EventLoop::new();
@@ -409,9 +439,23 @@ fn main() {
         scene_root.add_child(&terrain_node);
 
 
+        // set correct ref point
+        heli_tail_rotor_node.reference_point = glm::vec3(0.35, 2.3, 10.4);
+
         heli_root_node.print();
 
+
+
+
+
         //------------------- end scene setup -------------------//
+
+
+
+
+
+
+
 
 
         //let vao_id = unsafe{ initiate_vao(&obj_vertices, &obj_indices, & color) };
@@ -588,11 +632,15 @@ fn main() {
 
                 //gl::UniformMatrix4fv(5, 1, gl::FALSE, transform_matrix.as_ptr());
 
+                heli_main_rotor_node.rotation = glm::vec3(1.0, 1.0, 2.0*elapsed);
+                heli_tail_rotor_node.rotation = glm::vec3(1.0, 2.0*elapsed, 1.0);
+
                 // println!("yaw: {}", camera_properties.yaw);
 
+                update_node_transformations(&mut terrain_node, &scene_root.current_transformation_matrix);
                 draw_scene(&scene_root, &transform_matrix);
 
-                //draw_scene(indices.len()); //drawing the triangles now, this will draw all objects later
+                //draw_scene(indices.len()); //drawing the triangles now, this will dr aw all objects later
                 /* draw_scene(vao_terrain_id, terrain.indices.len());
                 draw_scene(vao_heli_body, helicopter.body.indices.len());
                 draw_scene(vao_heli_door, helicopter.door.indices.len());
