@@ -2,7 +2,7 @@
 
 uniform layout(location = 4) float time;
 uniform layout(location = 5) mat4 transform_matrix;
-//layout(location = 2) in vec4 color; 
+//layout(location = 2) in vec4 color;
 in vec3 position;
 in layout(location=2) vec4 vertexColor;
 in layout(location=3) vec3 normals;

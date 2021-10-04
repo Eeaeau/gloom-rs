@@ -107,8 +107,7 @@ unsafe fn initiate_vao(vertices: &Vec<f32>, indices: &Vec<u32>, color: &Vec<f32>
 
     let mut color_index: u32 = 0;
     let color_buffer_id: u32 = 2;
-    let  normal_index: u32 = 3;
-    let mut normal_buffer_id: u32 = 0;
+
 
     gl::GenBuffers(1, &mut color_index);
     assert_ne!(color_index, 0); // make sure 0 is not returned
@@ -131,6 +130,10 @@ unsafe fn initiate_vao(vertices: &Vec<f32>, indices: &Vec<u32>, color: &Vec<f32>
         pointer_to_array(color),
         gl::STATIC_DRAW);
 
+    // ----------- Normal setup ------------ //
+    let normal_index: u32 = 3;
+    let mut normal_buffer_id: u32 = 0;
+
     gl::GenBuffers(1, &mut normal_buffer_id);
     assert_ne!(normal_buffer_id, 0); // make sure 0 is not returned
     gl::BindBuffer(gl::ARRAY_BUFFER, normal_buffer_id);
@@ -140,7 +143,7 @@ unsafe fn initiate_vao(vertices: &Vec<f32>, indices: &Vec<u32>, color: &Vec<f32>
         byte_size_of_array(normals),
         pointer_to_array(normals),
         gl::STATIC_DRAW);
-    
+
     gl::EnableVertexAttribArray(normal_index);
 
     gl::VertexAttribPointer(
@@ -150,7 +153,6 @@ unsafe fn initiate_vao(vertices: &Vec<f32>, indices: &Vec<u32>, color: &Vec<f32>
         gl::FALSE,
         0,
         ptr::null());
-
 
     return vao
 }
@@ -171,7 +173,7 @@ unsafe fn draw_scene(node: &scene_graph::SceneNode,
         gl::UniformMatrix4fv(5, 1, gl::FALSE, (view_projection_matrix*node.current_transformation_matrix).as_ptr());
         gl::DrawElements(gl::TRIANGLES, node.index_count as i32, gl::UNSIGNED_INT, ptr::null());
 
-        
+
     }
     // Recurse
     for &child in &node.children {
@@ -286,85 +288,86 @@ fn main() {
         //-----------------import obj ass3------------------//
 
         let terrain = mesh::Terrain::load("resources/lunarsurface.obj");
+        // let terrain = mesh::Terrain::load("resources/lunarsurface_hp.obj");
 
         let helicopter = mesh::Helicopter::load("resources/helicopter.obj");
 
-        
+
 
 
         //-----------------end import obj ass3------------------//
 
-        
 
 
 
-        // ---------------- import OBJ object -------------- //
-        let mut obj_vertices: Vec<f32> = vec![];
-        let mut obj_indices: Vec<u32> = vec![];
 
-        let teapot = tobj::load_obj(
-            "assets/teapot.obj",
-            &tobj::LoadOptions {
-                single_index: true,
-                triangulate: true,
-                ..Default::default()
-            },
-        );
-        assert!(teapot.is_ok());
-        let (models, materials) = teapot.expect("Failed to load OBJ file");
+        // ---------------- import teapot OBJ object -------------- //
 
+        // let mut obj_vertices: Vec<f32> = vec![];
+        // let mut obj_indices: Vec<u32> = vec![];
 
-        // Materials might report a separate loading error if the MTL file wasn't found.
-        // If you don't need the materials, you can generate a default here and use that
-        // instead.
-
-        println!("# of models: {}", models.len());
+        // let teapot = tobj::load_obj(
+        //     "assets/teapot.obj",
+        //     &tobj::LoadOptions {
+        //         single_index: true,
+        //         triangulate: true,
+        //         ..Default::default()
+        //     },
+        // );
+        // assert!(teapot.is_ok());
+        // let (models, materials) = teapot.expect("Failed to load OBJ file");
 
 
-        for (i, m) in models.iter().enumerate() {
-            let mesh = &m.mesh;
+        // // Materials might report a separate loading error if the MTL file wasn't found.
+        // // If you don't need the materials, you can generate a default here and use that
+        // // instead.
 
-            println!("model[{}].name = \'{}\'", i, m.name);
-            println!("model[{}].mesh.material_id = {:?}", i, mesh.material_id);
-
-            println!(
-                "Size of model[{}].face_arities: {}",
-                i,
-                mesh.face_arities.len()
-            );
-
-            let mut next_face = 0;
-            for f in 0..mesh.face_arities.len() {
-                let end = next_face + mesh.face_arities[f] as usize;
-                let face_indices: Vec<_> = mesh.indices[next_face..end].iter().collect();
-                println!("    face[{}] = {:?}", f, face_indices);
-                next_face = end;
-            }
-
-            // Normals and texture coordinates are also loaded, but not printed in this example
-            println!("model[{}].vertices: {}", i, mesh.positions.len() / 3);
-
-            assert!(mesh.positions.len() % 3 == 0);
-            for v in 0..mesh.positions.len() / 3 {
-                println!(
-                    "    v[{}] = ({}, {}, {})",
-                    v,
-                    mesh.positions[3 * v],
-                    mesh.positions[3 * v + 1],
-                    mesh.positions[3 * v + 2]
-                );
-            }
-            for v in &mesh.positions {
+        // println!("# of models: {}", models.len());
 
 
-                obj_vertices.push(*v);
-            }
-            for i in &mesh.indices {
-                //println!("{}", *i);
-                obj_indices.push(*i);
-            }
-        }
+        // for (i, m) in models.iter().enumerate() {
+        //     let mesh = &m.mesh;
 
+        //     println!("model[{}].name = \'{}\'", i, m.name);
+        //     println!("model[{}].mesh.material_id = {:?}", i, mesh.material_id);
+
+        //     println!(
+        //         "Size of model[{}].face_arities: {}",
+        //         i,
+        //         mesh.face_arities.len()
+        //     );
+
+        //     let mut next_face = 0;
+        //     for f in 0..mesh.face_arities.len() {
+        //         let end = next_face + mesh.face_arities[f] as usize;
+        //         let face_indices: Vec<_> = mesh.indices[next_face..end].iter().collect();
+        //         println!("    face[{}] = {:?}", f, face_indices);
+        //         next_face = end;
+        //     }
+
+        //     // Normals and texture coordinates are also loaded, but not printed in this example
+        //     println!("model[{}].vertices: {}", i, mesh.positions.len() / 3);
+
+        //     assert!(mesh.positions.len() % 3 == 0);
+        //     for v in 0..mesh.positions.len() / 3 {
+        //         println!(
+        //             "    v[{}] = ({}, {}, {})",
+        //             v,
+        //             mesh.positions[3 * v],
+        //             mesh.positions[3 * v + 1],
+        //             mesh.positions[3 * v + 2]
+        //         );
+        //     }
+        //     for v in &mesh.positions {
+
+
+        //         obj_vertices.push(*v);
+        //     }
+        //     for i in &mesh.indices {
+        //         //println!("{}", *i);
+        //         obj_indices.push(*i);
+        //     }
+        // }
 
         // ------------------- end OBJ import ------------------- //
 
@@ -379,17 +382,44 @@ fn main() {
         let vao_heli_main_rotor = unsafe{ initiate_vao(& helicopter.main_rotor.vertices, & helicopter.main_rotor.indices, & helicopter.main_rotor.colors, & helicopter.main_rotor.normals) };
         let vao_heli_tail_rotor = unsafe{ initiate_vao(& helicopter.tail_rotor.vertices, & helicopter.tail_rotor.indices, & helicopter.tail_rotor.colors, & helicopter.tail_rotor.normals) };
 
-        
 
 
 
         //------------------- end vaos for helicopter-------------------//
+
+
+
+        //------------------- setup scene nodes -------------------//
+
+        //
+        let mut scene_root = SceneNode::new();
+        let mut terrain_node = SceneNode::from_vao(vao_terrain_id, terrain.index_count);
+        let mut heli_root_node = SceneNode::new();
+        let mut heli_body_node = SceneNode::from_vao(vao_heli_body, helicopter.body.index_count);
+        let mut heli_door_node = SceneNode::from_vao(vao_heli_door, helicopter.door.index_count);
+        let mut heli_main_rotor_node = SceneNode::from_vao(vao_heli_main_rotor, helicopter.main_rotor.index_count);
+        let mut heli_tail_rotor_node = SceneNode::from_vao(vao_heli_tail_rotor, helicopter.tail_rotor.index_count);
+
+
+        heli_root_node.add_child(&heli_body_node);
+        heli_root_node.add_child(&heli_door_node);
+        heli_root_node.add_child(&heli_main_rotor_node);
+        heli_root_node.add_child(&heli_tail_rotor_node);
+        terrain_node.add_child(&heli_root_node);
+        scene_root.add_child(&terrain_node);
+
+
+        heli_root_node.print();
+
+        //------------------- end scene setup -------------------//
+
+
         //let vao_id = unsafe{ initiate_vao(&obj_vertices, &obj_indices, & color) };
         // Basic usage of shader helper:
         // The example code below returns a shader object, which contains the field `.program_id`.
         // The snippet is not enough to do the assignment, and will need to be modified (outside of
         // just using the correct path), but it only needs to be called once
-        //  
+        //
         //     shader::ShaderBuilder::new()
         //        .attach_file("./path/to/shader.file")
         //        .link();
@@ -413,7 +443,7 @@ fn main() {
             y: 1.0,
             // Start with -1 since view-box is from -1 to 1, this way we see the scene at the beginning
             z: -1.0,
-            movement_speed: 2.0,
+            movement_speed: 20.0,
             yaw: 0.0,
             pitch: 0.0,
             roll: 0.0,
@@ -425,7 +455,7 @@ fn main() {
             y: 1.0,
             // Start with -1 since view-box is from -1 to 1, this way we see the scene at the beginning
             z: -1.0,
-            movement_speed: 2.0,
+            movement_speed: 20.0,
             yaw: 0.0,
             pitch: 0.0,
             roll: 0.0,
@@ -507,9 +537,9 @@ fn main() {
 
                 camera_properties.yaw += delta.0 * camera_properties.look_sensitivity;
 
-                println!("mouse x: {}",  delta.0);
-                println!("mouse y: {}",  delta.1);
-                println!("yaw: {}",  camera_properties.yaw);
+                // println!("mouse x: {}",  delta.0);
+                // println!("mouse y: {}",  delta.1);
+                // println!("yaw: {}",  camera_properties.yaw);
 
                 *delta = (0.0, 0.0);
             }
@@ -519,27 +549,9 @@ fn main() {
                 gl::ClearColor(0.0, 0.0, 0.0, 1.0);
                 gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
 
+
                 // Issue the necessary commands to draw your scene here
-                let mut scene_root = SceneNode::new();
-                let mut terrain_node = SceneNode::from_vao(vao_terrain_id, terrain.index_count);
-                let mut heli_root_node = SceneNode::new();
-                let mut heli_body_node = SceneNode::from_vao(vao_heli_body, helicopter.body.index_count);
-                let mut heli_door_node = SceneNode::from_vao(vao_heli_door, helicopter.door.index_count);
-                let mut heli_main_rotor_node = SceneNode::from_vao(vao_heli_main_rotor, helicopter.main_rotor.index_count);
-                let mut heli_tail_rotor_node = SceneNode::from_vao(vao_heli_tail_rotor, helicopter.tail_rotor.index_count);
 
-
-                heli_root_node.add_child(&heli_body_node);
-                heli_root_node.add_child(&heli_door_node);
-                heli_root_node.add_child(&heli_main_rotor_node);
-                heli_root_node.add_child(&heli_tail_rotor_node);
-                terrain_node.add_child(&heli_root_node);
-                scene_root.add_child(&terrain_node);
-
-
-            
-
-                
 
                 // let scale_vector: glm::Vec3 = glm::vec3(1.0, 1.0, 1.0);
 
@@ -589,8 +601,8 @@ fn main() {
  */
                 //do i have to bind something?
                 /*
-                
-                
+
+
                  */
                 //draw the elements mode: triangle, number of points/count: lenght of the indices, type and void* indices
 
