@@ -634,6 +634,7 @@ fn main() {
 
                 heli_main_rotor_node.rotation = glm::vec3(100.0*elapsed, 0.0, 0.0);
                 heli_tail_rotor_node.rotation = glm::vec3(0.0, 50.0*elapsed, 0.0);
+                heli_root_node.position = glm::vec3(0.0, 0.3*elapsed.sin(), 0.0);
 
                 // println!("yaw: {}", camera_properties.yaw);
 
