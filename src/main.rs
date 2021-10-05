@@ -10,6 +10,7 @@ mod util;
 //mod resources;
 mod mesh;
 mod scene_graph;
+mod toolbox;
 
 
 use scene_graph::SceneNode;
@@ -635,6 +636,14 @@ fn main() {
                 heli_main_rotor_node.rotation = glm::vec3(100.0*elapsed, 0.0, 0.0);
                 heli_tail_rotor_node.rotation = glm::vec3(0.0, 50.0*elapsed, 0.0);
                 heli_root_node.position = glm::vec3(0.0, 0.3*elapsed.sin(), 0.0);
+
+                let heading = toolbox::simple_heading_animation(elapsed);
+
+                heli_root_node.position.x = heading.x;
+                heli_root_node.position.z = heading.z;
+                heli_body_node.rotation.x = heading.pitch;
+                heli_body_node.rotation.y = heading.yaw;
+                heli_body_node.rotation.z = heading.roll;
 
                 // println!("yaw: {}", camera_properties.yaw);
 
