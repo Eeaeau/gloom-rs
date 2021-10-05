@@ -632,8 +632,8 @@ fn main() {
 
                 //gl::UniformMatrix4fv(5, 1, gl::FALSE, transform_matrix.as_ptr());
 
-                heli_main_rotor_node.rotation = glm::vec3(1.0, 1.0, 2.0*elapsed);
-                heli_tail_rotor_node.rotation = glm::vec3(1.0, 2.0*elapsed, 1.0);
+                heli_main_rotor_node.rotation = glm::vec3(100.0*elapsed, 0.0, 0.0);
+                heli_tail_rotor_node.rotation = glm::vec3(0.0, 50.0*elapsed, 0.0);
 
                 // println!("yaw: {}", camera_properties.yaw);
 
