@@ -637,13 +637,18 @@ fn main() {
                 heli_tail_rotor_node.rotation = glm::vec3(0.0, 50.0*elapsed, 0.0);
                 heli_root_node.position = glm::vec3(0.0, 0.3*elapsed.sin(), 0.0);
 
+
+
+                //--------------- making the helicopter go in a path-------------------//
                 let heading = toolbox::simple_heading_animation(elapsed);
 
                 heli_root_node.position.x = heading.x;
                 heli_root_node.position.z = heading.z;
-                heli_body_node.rotation.x = heading.pitch;
-                heli_body_node.rotation.y = heading.yaw;
-                heli_body_node.rotation.z = heading.roll;
+                heli_root_node.rotation.x = heading.pitch;
+                heli_root_node.rotation.y = heading.yaw;
+                heli_root_node.rotation.z = heading.roll;
+
+                //--------------- end making the helicopter go in a path-------------------//
 
                 // println!("yaw: {}", camera_properties.yaw);
 

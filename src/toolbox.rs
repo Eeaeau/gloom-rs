@@ -12,8 +12,8 @@ pub struct Heading {
 pub fn simple_heading_animation(time: f32) -> Heading {
     let t             = time as f64;
     let step          = 0.05f64;
-    let path_size     = 15f64;
-    let circuit_speed = 0.8f64;
+    let path_size     = 40f64; //org val: 15f64
+    let circuit_speed = 0.3f64; //org val: 0.8f64
 
     let xpos      = path_size * (2.0 * (t+ 0.0) * circuit_speed).sin();
     let xpos_next = path_size * (2.0 * (t+step) * circuit_speed).sin();
