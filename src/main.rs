@@ -173,7 +173,9 @@ unsafe fn draw_scene(node: &scene_graph::SceneNode,
     let mut count = 0;
     if node.index_count != -1{
         gl::BindVertexArray(node.vao_id);
-        gl::UniformMatrix4fv(5, 1, gl::FALSE, (view_projection_matrix*node.current_transformation_matrix).as_ptr());
+        gl::UniformMatrix4fv(5, 1, gl::FALSE, (node.current_transformation_matrix).as_ptr());
+        //gl::UniformMatrix4fv(6, 1, gl::FALSE, (view_projection_matrix).as_ptr());
+        gl::UniformMatrix4fv(6, 1, gl::FALSE, (view_projection_matrix*node.current_transformation_matrix).as_ptr());
         gl::DrawElements(gl::TRIANGLES, node.index_count as i32, gl::UNSIGNED_INT, ptr::null());
 
 

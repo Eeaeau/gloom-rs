@@ -1,7 +1,9 @@
 #version 450 core
 
 uniform layout(location = 4) float time;
-uniform layout(location = 5) mat4 transform_matrix;
+uniform layout(location = 5) mat4 modelMatrix;
+uniform layout(location = 6) mat4 transform_matrix;
+//uniform layout(location = 5) mat4 viewProjection;
 //layout(location = 2) in vec4 color;
 in vec3 position;
 in layout(location=2) vec4 vertexColor;
@@ -45,6 +47,6 @@ void main()
 
     fragmentColor = vertexColor;
     //vertexNormals = normals;
-    vertexNormals = normalize(mat3(transform_matrix) * normals);
+    vertexNormals = normalize(mat3(modelMatrix) * normals);
 
 }
