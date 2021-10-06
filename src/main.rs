@@ -202,19 +202,19 @@ unsafe fn door_animation(node: &mut std::mem::ManuallyDrop<std::pin::Pin<std::bo
         }
     } */
 
-    if !door_open{
-        for x in (0..0.12).step_by(0.01){
-            node.position.z += x;
-        }
+    // if !door_open{
+    //     for x in (0..0.12).step_by(0.01){
+    //         node.position.z += x;
+    //     }
 
-    }
-    else{
-        for x in (node.position.z..0.0).step_by(-0.01){
-            node.position.z -= x;
-        }
-    }
-    
-    
+    // }
+    // else{
+    //     for x in (node.position.z..0.0).step_by(-0.01){
+    //         node.position.z -= x;
+    //     }
+    // }
+
+
 
 }
 
@@ -246,6 +246,25 @@ unsafe fn update_node_transformations(node: &mut scene_graph::SceneNode,
         &node.current_transformation_matrix);
     }
 }
+
+fn animate_scene_node(heli_root_node: &mut std::mem::ManuallyDrop<std::pin::Pin<std::boxed::Box<scene_graph::SceneNode>>>, heading: toolbox::Heading, elapsed: f32) {
+
+    //--------------- making the helicopter rotors spin -------------------//
+    // heli_main_rotor_node.rotation = glm::vec3(100.0*elapsed, 0.0, 0.0);
+    heli_root_node.get_child(2).rotation = glm::vec3(100.0*elapsed, 0.0, 0.0); // main rotor
+    heli_root_node.get_child(3).rotation = glm::vec3(0.0, 50.0*elapsed, 0.0); // tail rotor
+
+    heli_root_node.position.x = heading.x;
+    heli_root_node.position.y = 10.0 + 0.4*elapsed.sin();
+    heli_root_node.position.z = heading.z;
+    heli_root_node.rotation.y = heading.pitch;
+    heli_root_node.rotation.x = heading.yaw;
+    heli_root_node.rotation.z = heading.roll;
+
+    //--------------- end making the helicopter go in a path-------------------//
+
+}
+
 
 
 fn main() {
@@ -445,45 +464,46 @@ fn main() {
         let vao_terrain_id = unsafe{ initiate_vao(& terrain.vertices, & terrain.indices, & terrain.colors, & terrain.normals) };
 
 
-        //------------------- vaos for helicopter----------------------// //should make this process easier
-        let vao_heli_body = unsafe{ initiate_vao(& helicopter.body.vertices, & helicopter.body.indices, & helicopter.body.colors, & helicopter.body.normals) };
-        let vao_heli_door = unsafe{ initiate_vao(& helicopter.door.vertices, & helicopter.door.indices, & helicopter.door.colors, & helicopter.door.normals) };
-        let vao_heli_main_rotor = unsafe{ initiate_vao(& helicopter.main_rotor.vertices, & helicopter.main_rotor.indices, & helicopter.main_rotor.colors, & helicopter.main_rotor.normals) };
-        let vao_heli_tail_rotor = unsafe{ initiate_vao(& helicopter.tail_rotor.vertices, & helicopter.tail_rotor.indices, & helicopter.tail_rotor.colors, & helicopter.tail_rotor.normals) };
-
-
-
-
-        //------------------- end vaos for helicopter-------------------//
-
-
 
         //------------------- setup scene nodes -------------------//
 
-        //
+
         let mut scene_root = SceneNode::new();
         let mut terrain_node = SceneNode::from_vao(vao_terrain_id, terrain.index_count);
-        let mut heli_root_node = SceneNode::new();
-        let mut heli_body_node = SceneNode::from_vao(vao_heli_body, helicopter.body.index_count);
-        let mut heli_door_node = SceneNode::from_vao(vao_heli_door, helicopter.door.index_count);
-        let mut heli_main_rotor_node = SceneNode::from_vao(vao_heli_main_rotor, helicopter.main_rotor.index_count);
-        let mut heli_tail_rotor_node = SceneNode::from_vao(vao_heli_tail_rotor, helicopter.tail_rotor.index_count);
-
-
-        heli_root_node.add_child(&heli_body_node);
-        heli_root_node.add_child(&heli_door_node);
-        heli_root_node.add_child(&heli_main_rotor_node);
-        heli_root_node.add_child(&heli_tail_rotor_node);
-        terrain_node.add_child(&heli_root_node);
         scene_root.add_child(&terrain_node);
 
 
-        // set correct ref point
-        heli_tail_rotor_node.reference_point = glm::vec3(0.35, 2.3, 10.4);
+        let mut hellicopter_node_collection: Vec<scene_graph::Node> = vec![];
 
-        heli_root_node.print();
+        for n in 0..4{
+            //------------------- vaos for helicopter----------------------// //should make this process easier
+            let vao_heli_body = unsafe{ initiate_vao(& helicopter.body.vertices, & helicopter.body.indices, & helicopter.body.colors, & helicopter.body.normals) };
+            let vao_heli_door = unsafe{ initiate_vao(& helicopter.door.vertices, & helicopter.door.indices, & helicopter.door.colors, & helicopter.door.normals) };
+            let vao_heli_main_rotor = unsafe{ initiate_vao(& helicopter.main_rotor.vertices, & helicopter.main_rotor.indices, & helicopter.main_rotor.colors, & helicopter.main_rotor.normals) };
+            let vao_heli_tail_rotor = unsafe{ initiate_vao(& helicopter.tail_rotor.vertices, & helicopter.tail_rotor.indices, & helicopter.tail_rotor.colors, & helicopter.tail_rotor.normals) };
+
+            //------------------- end vaos for helicopter-------------------//
+
+            let mut heli_root_node = SceneNode::new();
+            let mut heli_body_node = SceneNode::from_vao(vao_heli_body, helicopter.body.index_count);
+            let mut heli_door_node = SceneNode::from_vao(vao_heli_door, helicopter.door.index_count);
+            let mut heli_main_rotor_node = SceneNode::from_vao(vao_heli_main_rotor, helicopter.main_rotor.index_count);
+            let mut heli_tail_rotor_node = SceneNode::from_vao(vao_heli_tail_rotor, helicopter.tail_rotor.index_count);
 
 
+            heli_root_node.add_child(&heli_body_node);
+            heli_root_node.add_child(&heli_door_node);
+            heli_root_node.add_child(&heli_main_rotor_node);
+            heli_root_node.add_child(&heli_tail_rotor_node);
+            terrain_node.add_child(&heli_root_node);
+
+            // set correct ref point
+            heli_tail_rotor_node.reference_point = glm::vec3(0.35, 2.3, 10.4);
+
+            heli_root_node.print();
+            hellicopter_node_collection.push(heli_root_node);
+
+        }
 
 
 
@@ -604,7 +624,7 @@ fn main() {
                         VirtualKeyCode::T => {
                             //door_animation(&mut heli_door_node, elapsed);
                             door_open = !door_open;
-                            
+
                         },
 
                         _ => { }
@@ -678,14 +698,13 @@ fn main() {
                 //gl::UniformMatrix4fv(5, 1, gl::FALSE, transform_matrix.as_ptr());
 
 
-                //--------------- making the helicopter rotors spin -------------------//
-                heli_main_rotor_node.rotation = glm::vec3(100.0*elapsed, 0.0, 0.0);
-                heli_tail_rotor_node.rotation = glm::vec3(0.0, 50.0*elapsed, 0.0);
+                for n in 0..4 {
+                    //--------------- making the helicopter go in a path-------------------//
+                    let heading = toolbox::simple_heading_animation(elapsed + 3.0);
 
-                //--------------- making the helicopter go in a path-------------------//
-                let heading = toolbox::simple_heading_animation(elapsed);
+                    animate_scene_node(&mut hellicopter_node_collection[n], heading, elapsed);
 
-                door_animation(&mut heli_door_node, door_open, delta_time);
+                    // door_animation(&mut heli_door_node, door_open, delta_time);
 
                 /* heli_root_node.position.x = heading.x;
                 heli_root_node.position.y = 10.0 + 0.4*elapsed.sin();
@@ -693,8 +712,7 @@ fn main() {
                 heli_root_node.rotation.y = heading.pitch;
                 heli_root_node.rotation.x = heading.yaw;
                 heli_root_node.rotation.z = heading.roll; */
-
-                //--------------- end making the helicopter go in a path-------------------//
+                }
 
 
                 //-----------------rotate to check lighting conditions (Task5a) -----------------//
