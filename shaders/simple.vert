@@ -44,5 +44,7 @@ void main()
     //     1.0f);
 
     fragmentColor = vertexColor;
-    vertexNormals = normals;
+    //vertexNormals = normals;
+    vertexNormals = normalize(mat3(transform_matrix) * normals);
+
 }

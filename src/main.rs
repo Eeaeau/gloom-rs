@@ -20,6 +20,8 @@ use glutin::event_loop::ControlFlow;
 const SCREEN_W: u32 = 800;
 const SCREEN_H: u32 = 600;
 
+//#[define M_PI 3.1415926535897932384626433832795]
+
 // == // Helper functions to make interacting with OpenGL a little bit prettier. You *WILL* need these! // == //
 // The names should be pretty self explanatory
 fn byte_size_of_array<T>(val: &[T]) -> isize {
@@ -640,15 +642,24 @@ fn main() {
 
 
                 //--------------- making the helicopter go in a path-------------------//
-                let heading = toolbox::simple_heading_animation(elapsed);
+                /* let heading = toolbox::simple_heading_animation(elapsed);
 
                 heli_root_node.position.x = heading.x;
                 heli_root_node.position.z = heading.z;
                 heli_root_node.rotation.x = heading.pitch;
                 heli_root_node.rotation.y = heading.yaw;
                 heli_root_node.rotation.z = heading.roll;
-
+ */
                 //--------------- end making the helicopter go in a path-------------------//
+
+
+                //-----------------rotate to check lighting conditions (Task5a) -----------------//
+
+                heli_root_node.rotation.x = 3.1415926535897932384626433832795*-0.5; //+- 0.5 to rotate the helicopter
+
+
+                //-----------------^rotate to check lighting conditions ^-----------------//
+
 
                 // println!("yaw: {}", camera_properties.yaw);
 
