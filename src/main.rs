@@ -559,10 +559,10 @@ fn main() {
                             camera_properties.y -= delta_time * camera_properties.movement_speed;
                         },
                         VirtualKeyCode::F => {
-                            camera_properties.roll += delta_time * camera_properties.movement_speed;
+                            camera_properties.roll += delta_time * 100.0*camera_properties.look_sensitivity;
                         },
                         VirtualKeyCode::C => {
-                            camera_properties.roll -= delta_time * camera_properties.movement_speed;
+                            camera_properties.roll -= delta_time * 100.0*camera_properties.look_sensitivity;
                         },
                         VirtualKeyCode::R => {
                             camera_properties = camera_properties_default.clone();
@@ -606,6 +606,7 @@ fn main() {
 
                 // let angle: f32 = 360.0f32.to_radians();
 
+                //--------------- calculate camera transform matrix  -------------------//
                 let direction_vector: glm::Vec3 = glm::vec3(0.0, 0.0, -6.0);
                 //for ass2
                 /* let camera_perspective: glm::Mat4 =
@@ -637,33 +638,31 @@ fn main() {
 
                 //gl::UniformMatrix4fv(5, 1, gl::FALSE, transform_matrix.as_ptr());
 
+
+                //--------------- making the helicopter rotors spin -------------------//
                 heli_main_rotor_node.rotation = glm::vec3(100.0*elapsed, 0.0, 0.0);
                 heli_tail_rotor_node.rotation = glm::vec3(0.0, 50.0*elapsed, 0.0);
-                heli_root_node.position = glm::vec3(0.0, 0.3*elapsed.sin(), 0.0);
-
-
 
                 //--------------- making the helicopter go in a path-------------------//
-                /* let heading = toolbox::simple_heading_animation(elapsed);
+                let heading = toolbox::simple_heading_animation(elapsed);
 
                 heli_root_node.position.x = heading.x;
+                heli_root_node.position.y = 10.0 + 0.4*elapsed.sin();
                 heli_root_node.position.z = heading.z;
-                heli_root_node.rotation.x = heading.pitch;
-                heli_root_node.rotation.y = heading.yaw;
+                heli_root_node.rotation.y = heading.pitch;
+                heli_root_node.rotation.x = heading.yaw;
                 heli_root_node.rotation.z = heading.roll;
- */
+
                 //--------------- end making the helicopter go in a path-------------------//
 
 
                 //-----------------rotate to check lighting conditions (Task5a) -----------------//
 
-                heli_root_node.rotation.x = 3.1415926535897932384626433832795*-0.5; //+- 0.5 to rotate the helicopter
+                // heli_root_node.rotation.x = 3.1415926535897932384626433832795*-0.5; //+- 0.5 to rotate the helicopter
 
 
                 //-----------------^rotate to check lighting conditions ^-----------------//
 
-
-                // println!("yaw: {}", camera_properties.yaw);
 
                 update_node_transformations(&mut terrain_node, &scene_root.current_transformation_matrix);
                 draw_scene(&scene_root, &transform_matrix);
