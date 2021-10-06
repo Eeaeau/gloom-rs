@@ -218,7 +218,7 @@ unsafe fn update_node_transformations(node: &mut scene_graph::SceneNode,
 
 fn animate_scene_node(heli_body_node: &mut scene_graph::SceneNode, elapsed: f32) {
 
-    let heading = toolbox::simple_heading_animation(elapsed);
+    let heading = toolbox::simple_heading_animation(0.3*elapsed);
 
     //--------------- making the helicopter rotors spin -------------------//
     // heli_main_rotor_node.rotation = glm::vec3(100.0*elapsed, 0.0, 0.0);
@@ -239,51 +239,31 @@ fn animate_scene_node(heli_body_node: &mut scene_graph::SceneNode, elapsed: f32)
 
 fn door_animation(node: &mut scene_graph::SceneNode, door_open: bool, time: f32, door_animation_complete: &mut bool) -> bool {
     // let t = time as f32;
-    let step = 0.01f32;
-    let closed_position = 0.0;
-    let open_position = 0.12;
+    let step = 1f32;
+    let closed_position = 0.0; // forward
+    let closed_position2 = 0.15; // start going inwards
+    let open_position = 1.5; // backwards
+    let open_position2 = 0.1; // outward
 
-    // opening
 
     if node.position.z < open_position && door_open {
+        // print!("opening...");
         node.position.z += time*step;
-    } else if node.position.z > open_position {
-        *door_animation_complete = true;
-    }
-
-
-    // closing
-
-    if node.position.z > closed_position && !door_open {
+        if node.position.x < open_position2 {
+            node.position.x += time*step;
+        }
+    } else if node.position.z > closed_position && !door_open {
+        // print!("closing...");
         node.position.z -= time*step;
-    } else if node.position.z < closed_position {
+        if node.position.x > closed_position && node.position.z < closed_position2 {
+            node.position.x -= time*step;
+        }
+    } else {
+        // print!("animation complete...");
         *door_animation_complete = true;
     }
 
     return *door_animation_complete;
-    // {
-    //     // while node.position.z != closed_door{
-    //     // }
-    //     node.position.z -= time*step;
-    // }
-
-
-
-
-    // if !door_open{
-    //     for x in (0..0.12).step_by(0.01){
-    //         node.position.z += x;
-    //     }
-
-    // }
-    // else{
-    //     for x in (node.position.z..0.0).step_by(-0.01){
-    //         node.position.z -= x;
-    //     }
-    // }
-
-
-
 }
 
 
@@ -496,7 +476,7 @@ fn main() {
 
 
         // let mut hellicopter_node_collection: Vec<scene_graph::Node> = vec![];
-        let num_of_hellis = 11;
+        let num_of_hellis = 22;
         for n in 0..num_of_hellis{
             //------------------- vaos for helicopter----------------------//
 
@@ -734,10 +714,10 @@ fn main() {
                     //--------------- making the helicopter go in a path-------------------//
 
 
-                    // animate_scene_node(&mut heli_root_node.get_child(n), elapsed + 2.0*(n as f32));
+                    animate_scene_node(&mut heli_root_node.get_child(n), elapsed + 4.0*(n as f32));
+                    // heli_root_node.get_child(n).position.y = 10.0*(n as f32);
 
-
-                    door_animation_complete= door_animation(&mut heli_root_node.get_child(n), door_open, delta_time, &mut door_animation_complete);
+                    door_animation_complete= door_animation(&mut heli_root_node.get_child(n).get_child(0), door_open, delta_time, &mut door_animation_complete);
 
                     /* heli_root_node.position.x = heading.x;
                     heli_root_node.position.y = 10.0 + 0.4*elapsed.sin();
