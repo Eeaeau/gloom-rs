@@ -186,6 +186,38 @@ unsafe fn draw_scene(node: &scene_graph::SceneNode,
     }
 }
 
+unsafe fn door_animation(node: &mut std::mem::ManuallyDrop<std::pin::Pin<std::boxed::Box<scene_graph::SceneNode>>>, door_status: bool, time: f32){
+    /* let t = time as f32;
+    let step = 0.01f32;
+    let closed_door = 0.0;
+    let open_door = 0.12;
+    if node.position.z == closed_door && door_status{
+        while node.position.z < open_door{
+            node.position.z += time*step;
+        }
+    }
+    else{
+        while node.position.z != closed_door{
+            node.position.z -= time*step;
+        }
+    } */
+
+    if !door_open{
+        for x in (0..0.12).step_by(0.01){
+            node.position.z += x;
+        }
+
+    }
+    else{
+        for x in (node.position.z..0.0).step_by(-0.01){
+            node.position.z -= x;
+        }
+    }
+    
+    
+
+}
+
 unsafe fn update_node_transformations(node: &mut scene_graph::SceneNode,
     transformation_so_far: &glm::Mat4) {
     // Construct the correct transformation matrix
@@ -226,6 +258,8 @@ fn main() {
     let cb = glutin::ContextBuilder::new()
         .with_vsync(true);
     let windowed_context = cb.build_windowed(wb, &el).unwrap();
+
+    let mut door_open: bool = false;
     // Uncomment these if you want to use the mouse for controls, but want it to be confined to the screen and/or invisible.
     // windowed_context.window().set_cursor_grab(true).expect("failed to grab cursor");
     // windowed_context.window().set_cursor_visible(false);
@@ -567,6 +601,11 @@ fn main() {
                         VirtualKeyCode::R => {
                             camera_properties = camera_properties_default.clone();
                         },
+                        VirtualKeyCode::T => {
+                            //door_animation(&mut heli_door_node, elapsed);
+                            door_open = !door_open;
+                            
+                        },
 
                         _ => { }
                     }
@@ -646,12 +685,14 @@ fn main() {
                 //--------------- making the helicopter go in a path-------------------//
                 let heading = toolbox::simple_heading_animation(elapsed);
 
-                heli_root_node.position.x = heading.x;
+                door_animation(&mut heli_door_node, door_open, delta_time);
+
+                /* heli_root_node.position.x = heading.x;
                 heli_root_node.position.y = 10.0 + 0.4*elapsed.sin();
                 heli_root_node.position.z = heading.z;
                 heli_root_node.rotation.y = heading.pitch;
                 heli_root_node.rotation.x = heading.yaw;
-                heli_root_node.rotation.z = heading.roll;
+                heli_root_node.rotation.z = heading.roll; */
 
                 //--------------- end making the helicopter go in a path-------------------//
 
