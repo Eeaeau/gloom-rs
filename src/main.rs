@@ -738,7 +738,7 @@ fn main() {
 
                     animate_scene_node(&mut heli_root_node.get_child(n), elapsed + 4.0*(n as f32));
                     // heli_root_node.get_child(n).position.y = 10.0*(n as f32);
-                    heli_root_node.get_child(n).print();
+                    //heli_root_node.get_child(n).print();
                     door_animation_complete= door_animation(&mut heli_root_node.get_child(n).get_child(0), door_open, delta_time, &mut door_animation_complete);
 
                     /* heli_root_node.position.x = heading.x;
