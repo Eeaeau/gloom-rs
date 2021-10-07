@@ -218,7 +218,7 @@ unsafe fn update_node_transformations(node: &mut scene_graph::SceneNode,
 
 fn animate_scene_node(heli_body_node: &mut scene_graph::SceneNode, elapsed: f32) {
 
-    let heading = toolbox::simple_heading_animation(0.3*elapsed);
+    let heading = toolbox::simple_heading_animation(0.8*elapsed);
 
     //--------------- making the helicopter rotors spin -------------------//
     // heli_main_rotor_node.rotation = glm::vec3(100.0*elapsed, 0.0, 0.0);
@@ -476,10 +476,10 @@ fn main() {
 
 
         // let mut hellicopter_node_collection: Vec<scene_graph::Node> = vec![];
-        
+
         /* const num_of_hellis: usize = 22;
         let heli_imdex_array: [u32; num_of_hellis] = [1..num_of_hellis]; */
-        let num_of_hellis = 22;
+        let num_of_hellis = 11;
         let mut heli_index = 0;
         //let heli_imdex_array = [0..num_of_hellis];
 
@@ -509,7 +509,7 @@ fn main() {
             heli_tail_rotor_node.reference_point = glm::vec3(0.35, 2.3, 10.4);
 
             //heli_root_node.print();
-            
+
             // hellicopter_node_collection.push(heli_root_node);
 
         }
@@ -575,6 +575,8 @@ fn main() {
             look_sensitivity: 0.008
         };
 
+        // let mut move_vector = glm::vec3(-camera_properties.x, -camera_properties.y, -camera_properties.z);
+
         // Used to demonstrate keyboard handling -- feel free to remove
         let mut _arbitrary_number = 0.0;
 
@@ -622,7 +624,7 @@ fn main() {
                         VirtualKeyCode::E => {
                             camera_properties.y += delta_time * camera_properties.movement_speed;
                         },
-                        VirtualKeyCode::F => {
+                        VirtualKeyCode::Z => {
                             camera_properties.roll -= delta_time * 100.0*camera_properties.look_sensitivity;
                         },
                         VirtualKeyCode::C => {
@@ -632,13 +634,13 @@ fn main() {
                             camera_properties = camera_properties_default.clone();
                             print!("Reset camera")
                         },
-                        VirtualKeyCode::O => {
+                        VirtualKeyCode::F => {
                             camera_properties.x = heli_root_node.get_child(heli_index).position.x;
-                            camera_properties.y = heli_root_node.get_child(heli_index).position.y; 
-                            camera_properties.z = heli_root_node.get_child(heli_index).position.z; 
-                            
+                            camera_properties.y = heli_root_node.get_child(heli_index).position.y;
+                            camera_properties.z = heli_root_node.get_child(heli_index).position.z;
+
                         },
-                        VirtualKeyCode::Y => {
+                        VirtualKeyCode::Tab => {
                             if heli_index<num_of_hellis-1{
                                 heli_index += 1;
                             }
@@ -719,14 +721,14 @@ fn main() {
 
                 let mut transform_matrix: glm::Mat4 = glm::translation(&direction_vector);
 
-                // update camera positioning and orientation
                 let move_vector = glm::vec3(-camera_properties.x, -camera_properties.y, -camera_properties.z);
+                // update camera positioning and orientation
                 // move_vector = glm::normalize(&move_vector);
-                transform_matrix = glm::translate(&transform_matrix, &move_vector);
                 transform_matrix = glm::rotate_y(&transform_matrix, camera_properties.yaw);
                 transform_matrix = glm::rotate_x(&transform_matrix, camera_properties.pitch);
                 transform_matrix = glm::rotate_z(&transform_matrix, camera_properties.roll);
                 transform_matrix = camera_perspective*transform_matrix;
+                transform_matrix = glm::translate(&transform_matrix, &move_vector);
 
                 //gl::UniformMatrix4fv(5, 1, gl::FALSE, transform_matrix.as_ptr());
 
@@ -736,7 +738,7 @@ fn main() {
                     //--------------- making the helicopter go in a path-------------------//
 
 
-                    animate_scene_node(&mut heli_root_node.get_child(n), elapsed + 4.0*(n as f32));
+                    animate_scene_node(&mut heli_root_node.get_child(n), elapsed + 2.0*(n as f32));
                     // heli_root_node.get_child(n).position.y = 10.0*(n as f32);
                     //heli_root_node.get_child(n).print();
                     door_animation_complete= door_animation(&mut heli_root_node.get_child(n).get_child(0), door_open, delta_time, &mut door_animation_complete);
