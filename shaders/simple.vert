@@ -1,6 +1,6 @@
 #version 450 core
 
-uniform layout(location = 4) float time;
+//uniform layout(location = 4) float time;
 uniform layout(location = 5) mat4 modelMatrix;
 uniform layout(location = 6) mat4 transform_matrix;
 //uniform layout(location = 5) mat4 viewProjection;

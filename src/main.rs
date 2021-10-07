@@ -476,7 +476,13 @@ fn main() {
 
 
         // let mut hellicopter_node_collection: Vec<scene_graph::Node> = vec![];
+        
+        /* const num_of_hellis: usize = 22;
+        let heli_imdex_array: [u32; num_of_hellis] = [1..num_of_hellis]; */
         let num_of_hellis = 22;
+        let mut heli_index = 0;
+        //let heli_imdex_array = [0..num_of_hellis];
+
         for n in 0..num_of_hellis{
             //------------------- vaos for helicopter----------------------//
 
@@ -502,7 +508,8 @@ fn main() {
             // set correct ref point
             heli_tail_rotor_node.reference_point = glm::vec3(0.35, 2.3, 10.4);
 
-            heli_root_node.print();
+            //heli_root_node.print();
+            
             // hellicopter_node_collection.push(heli_root_node);
 
         }
@@ -580,9 +587,9 @@ fn main() {
             let delta_time = now.duration_since(last_frame_time).as_secs_f32();
             last_frame_time = now;
 
-            unsafe{
+            /* unsafe{
                 gl::Uniform1f(4, elapsed);
-            }
+            } */
 
             // Handle keyboard input
 
@@ -592,38 +599,52 @@ fn main() {
                         // sin and cos is used to take current yaw into account for movement
                         VirtualKeyCode::W => {
                             // camera_properties.z += delta_time * camera_properties.yaw.cos() * camera_properties.movement_speed;
-                            camera_properties.z += delta_time * camera_properties.yaw.cos() * camera_properties.movement_speed;
-                            camera_properties.x -= delta_time * camera_properties.yaw.sin() * camera_properties.movement_speed;
-                            camera_properties.y += delta_time * camera_properties.pitch.sin() * camera_properties.movement_speed;
-                        },
-                        VirtualKeyCode::S => {
                             camera_properties.z -= delta_time * camera_properties.yaw.cos() * camera_properties.movement_speed;
                             camera_properties.x += delta_time * camera_properties.yaw.sin() * camera_properties.movement_speed;
                             camera_properties.y -= delta_time * camera_properties.pitch.sin() * camera_properties.movement_speed;
                         },
-                        VirtualKeyCode::A => {
-                            camera_properties.x += delta_time * camera_properties.yaw.cos() * camera_properties.movement_speed;
-                            camera_properties.z += delta_time * camera_properties.yaw.sin() * camera_properties.movement_speed;
+                        VirtualKeyCode::S => {
+                            camera_properties.z += delta_time * camera_properties.yaw.cos() * camera_properties.movement_speed;
+                            camera_properties.x -= delta_time * camera_properties.yaw.sin() * camera_properties.movement_speed;
+                            camera_properties.y += delta_time * camera_properties.pitch.sin() * camera_properties.movement_speed;
                         },
-                        VirtualKeyCode::D => {
+                        VirtualKeyCode::A => {
                             camera_properties.x -= delta_time * camera_properties.yaw.cos() * camera_properties.movement_speed;
                             camera_properties.z -= delta_time * camera_properties.yaw.sin() * camera_properties.movement_speed;
                         },
-                        VirtualKeyCode::Q => {
-                            camera_properties.y += delta_time * camera_properties.movement_speed;
+                        VirtualKeyCode::D => {
+                            camera_properties.x += delta_time * camera_properties.yaw.cos() * camera_properties.movement_speed;
+                            camera_properties.z += delta_time * camera_properties.yaw.sin() * camera_properties.movement_speed;
                         },
-                        VirtualKeyCode::E => {
+                        VirtualKeyCode::Q => {
                             camera_properties.y -= delta_time * camera_properties.movement_speed;
                         },
+                        VirtualKeyCode::E => {
+                            camera_properties.y += delta_time * camera_properties.movement_speed;
+                        },
                         VirtualKeyCode::F => {
-                            camera_properties.roll += delta_time * 100.0*camera_properties.look_sensitivity;
+                            camera_properties.roll -= delta_time * 100.0*camera_properties.look_sensitivity;
                         },
                         VirtualKeyCode::C => {
-                            camera_properties.roll -= delta_time * 100.0*camera_properties.look_sensitivity;
+                            camera_properties.roll += delta_time * 100.0*camera_properties.look_sensitivity;
                         },
                         VirtualKeyCode::R => {
                             camera_properties = camera_properties_default.clone();
                             print!("Reset camera")
+                        },
+                        VirtualKeyCode::O => {
+                            camera_properties.x = heli_root_node.get_child(heli_index).position.x;
+                            camera_properties.y = heli_root_node.get_child(heli_index).position.y; 
+                            camera_properties.z = heli_root_node.get_child(heli_index).position.z; 
+                            
+                        },
+                        VirtualKeyCode::Y => {
+                            if heli_index<num_of_hellis-1{
+                                heli_index += 1;
+                            }
+                            else{
+                                heli_index = 0;
+                            }
                         },
                         VirtualKeyCode::T => {
                             //door_animation(&mut heli_door_node, elapsed);
@@ -665,7 +686,8 @@ fn main() {
 
             unsafe {
                 //gl::ClearColor(0.76862745, 0.71372549, 0.94901961, 1.0); // moon raker, full opacity
-                gl::ClearColor(0.0, 0.0, 0.0, 1.0);
+                //gl::ClearColor(0.0, 0.0, 0.0, 1.0);//black sky
+                gl::ClearColor(1.0, 0.6, 0.79, 1.0);
                 gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
 
 
@@ -698,7 +720,7 @@ fn main() {
                 let mut transform_matrix: glm::Mat4 = glm::translation(&direction_vector);
 
                 // update camera positioning and orientation
-                let move_vector = glm::vec3(camera_properties.x, camera_properties.y, camera_properties.z);
+                let move_vector = glm::vec3(-camera_properties.x, -camera_properties.y, -camera_properties.z);
                 // move_vector = glm::normalize(&move_vector);
                 transform_matrix = glm::translate(&transform_matrix, &move_vector);
                 transform_matrix = glm::rotate_y(&transform_matrix, camera_properties.yaw);
@@ -716,7 +738,7 @@ fn main() {
 
                     animate_scene_node(&mut heli_root_node.get_child(n), elapsed + 4.0*(n as f32));
                     // heli_root_node.get_child(n).position.y = 10.0*(n as f32);
-
+                    heli_root_node.get_child(n).print();
                     door_animation_complete= door_animation(&mut heli_root_node.get_child(n).get_child(0), door_open, delta_time, &mut door_animation_complete);
 
                     /* heli_root_node.position.x = heading.x;
