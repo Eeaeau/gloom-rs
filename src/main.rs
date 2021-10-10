@@ -160,13 +160,6 @@ unsafe fn initiate_vao(vertices: &Vec<f32>, indices: &Vec<u32>, color: &Vec<f32>
     return vao
 }
 
-/* unsafe fn draw_scene(vao: u32, count: usize) {
-    gl::FrontFace(gl::CW); //CCW for counter clockwise, CW for Clockwise
-    gl::BindVertexArray(vao);
-    gl::DrawElements(gl::TRIANGLES, count as i32, gl::UNSIGNED_INT, ptr::null()); // TRIANGLE_STRIP can be used to easier build up geometry
-}
- */
-
 unsafe fn draw_scene(node: &scene_graph::SceneNode,
     view_projection_matrix: &glm::Mat4) {
     // Check if node is drawable, set uniforms, draw
@@ -186,15 +179,11 @@ unsafe fn draw_scene(node: &scene_graph::SceneNode,
     }
 }
 
-
 unsafe fn update_node_transformations(node: &mut scene_graph::SceneNode,
     transformation_so_far: &glm::Mat4) {
     // Construct the correct transformation matrix
-    // let mut trans: glm::Mat4 = glm::identity();
 
-    // let mut transform_matrix: glm::Mat4 = glm::translation(& node.position);
     let mut transform_matrix: glm::Mat4 = *transformation_so_far;
-    // let mut transform_matrix: glm::Mat4 = glm::identity();
     transform_matrix = glm::translate(&transform_matrix, &node.position);
 
     transform_matrix = glm::translate(&transform_matrix, &node.reference_point);
@@ -221,7 +210,6 @@ fn animate_scene_node(heli_body_node: &mut scene_graph::SceneNode, elapsed: f32)
     let heading = toolbox::simple_heading_animation(0.8*elapsed);
 
     //--------------- making the helicopter rotors spin -------------------//
-    // heli_main_rotor_node.rotation = glm::vec3(100.0*elapsed, 0.0, 0.0);
     heli_body_node.get_child(1).rotation = glm::vec3(100.0*elapsed, 0.0, 0.0); // main rotor
     heli_body_node.get_child(2).rotation = glm::vec3(0.0, 50.0*elapsed, 0.0); // tail rotor
 
@@ -281,8 +269,8 @@ fn main() {
     let mut door_open: bool = false;
     let mut door_animation_complete: bool = true;
     // Uncomment these if you want to use the mouse for controls, but want it to be confined to the screen and/or invisible.
-    // windowed_context.window().set_cursor_grab(true).expect("failed to grab cursor");
-    // windowed_context.window().set_cursor_visible(false);
+    windowed_context.window().set_cursor_grab(true).expect("failed to grab cursor");
+    windowed_context.window().set_cursor_visible(false);
 
     // Set up a shared vector for keeping track of currently pressed keys
     let arc_pressed_keys = Arc::new(Mutex::new(Vec::<VirtualKeyCode>::with_capacity(10)));
@@ -381,90 +369,11 @@ fn main() {
 
         let helicopter = mesh::Helicopter::load("resources/helicopter.obj");
 
-
-
-
         //-----------------end import obj ass3------------------//
-
-
-
-
-
-        // ---------------- import teapot OBJ object -------------- //
-
-        // let mut obj_vertices: Vec<f32> = vec![];
-        // let mut obj_indices: Vec<u32> = vec![];
-
-        // let teapot = tobj::load_obj(
-        //     "assets/teapot.obj",
-        //     &tobj::LoadOptions {
-        //         single_index: true,
-        //         triangulate: true,
-        //         ..Default::default()
-        //     },
-        // );
-        // assert!(teapot.is_ok());
-        // let (models, materials) = teapot.expect("Failed to load OBJ file");
-
-
-        // // Materials might report a separate loading error if the MTL file wasn't found.
-        // // If you don't need the materials, you can generate a default here and use that
-        // // instead.
-
-        // println!("# of models: {}", models.len());
-
-
-        // for (i, m) in models.iter().enumerate() {
-        //     let mesh = &m.mesh;
-
-        //     println!("model[{}].name = \'{}\'", i, m.name);
-        //     println!("model[{}].mesh.material_id = {:?}", i, mesh.material_id);
-
-        //     println!(
-        //         "Size of model[{}].face_arities: {}",
-        //         i,
-        //         mesh.face_arities.len()
-        //     );
-
-        //     let mut next_face = 0;
-        //     for f in 0..mesh.face_arities.len() {
-        //         let end = next_face + mesh.face_arities[f] as usize;
-        //         let face_indices: Vec<_> = mesh.indices[next_face..end].iter().collect();
-        //         println!("    face[{}] = {:?}", f, face_indices);
-        //         next_face = end;
-        //     }
-
-        //     // Normals and texture coordinates are also loaded, but not printed in this example
-        //     println!("model[{}].vertices: {}", i, mesh.positions.len() / 3);
-
-        //     assert!(mesh.positions.len() % 3 == 0);
-        //     for v in 0..mesh.positions.len() / 3 {
-        //         println!(
-        //             "    v[{}] = ({}, {}, {})",
-        //             v,
-        //             mesh.positions[3 * v],
-        //             mesh.positions[3 * v + 1],
-        //             mesh.positions[3 * v + 2]
-        //         );
-        //     }
-        //     for v in &mesh.positions {
-
-
-        //         obj_vertices.push(*v);
-        //     }
-        //     for i in &mesh.indices {
-        //         //println!("{}", *i);
-        //         obj_indices.push(*i);
-        //     }
-        // }
-
-        // ------------------- end OBJ import ------------------- //
 
         // Initiating the vao to the triangle that are getting drawed.
         //let vao_id = unsafe{ initiate_vao(& vertices, & indices, & color) };
         let vao_terrain_id = unsafe{ initiate_vao(& terrain.vertices, & terrain.indices, & terrain.colors, & terrain.normals) };
-
-
 
         //------------------- setup scene nodes -------------------//
 
@@ -475,10 +384,6 @@ fn main() {
         let mut heli_root_node = SceneNode::new();
 
 
-        // let mut hellicopter_node_collection: Vec<scene_graph::Node> = vec![];
-
-        /* const num_of_hellis: usize = 22;
-        let heli_imdex_array: [u32; num_of_hellis] = [1..num_of_hellis]; */
         let num_of_hellis = 11;
         let mut heli_index = 0;
         //let heli_imdex_array = [0..num_of_hellis];
@@ -508,10 +413,6 @@ fn main() {
             // set correct ref point
             heli_tail_rotor_node.reference_point = glm::vec3(0.35, 2.3, 10.4);
 
-            //heli_root_node.print();
-
-            // hellicopter_node_collection.push(heli_root_node);
-
         }
 
         terrain_node.add_child(&heli_root_node);
@@ -519,15 +420,6 @@ fn main() {
 
         //------------------- end scene setup -------------------//
 
-
-
-
-
-
-
-
-
-        //let vao_id = unsafe{ initiate_vao(&obj_vertices, &obj_indices, & color) };
         // Basic usage of shader helper:
         // The example code below returns a shader object, which contains the field `.program_id`.
         // The snippet is not enough to do the assignment, and will need to be modified (outside of
@@ -600,14 +492,16 @@ fn main() {
                     match key {
                         // sin and cos is used to take current yaw into account for movement
                         VirtualKeyCode::W => {
-                            // camera_properties.z += delta_time * camera_properties.yaw.cos() * camera_properties.movement_speed;
                             camera_properties.z -= delta_time * camera_properties.yaw.cos() * camera_properties.movement_speed;
                             camera_properties.x += delta_time * camera_properties.yaw.sin() * camera_properties.movement_speed;
+
                             camera_properties.y -= delta_time * camera_properties.pitch.sin() * camera_properties.movement_speed;
+                            camera_properties.y -= delta_time * camera_properties.yaw.sin() * camera_properties.movement_speed;
                         },
                         VirtualKeyCode::S => {
                             camera_properties.z += delta_time * camera_properties.yaw.cos() * camera_properties.movement_speed;
                             camera_properties.x -= delta_time * camera_properties.yaw.sin() * camera_properties.movement_speed;
+
                             camera_properties.y += delta_time * camera_properties.pitch.sin() * camera_properties.movement_speed;
                         },
                         VirtualKeyCode::A => {
@@ -674,6 +568,7 @@ fn main() {
                 camera_properties.roll += delta.1 * camera_properties.look_sensitivity * look_up_down[1];
                 // limit pich to viewing somewher between top and bottom
                 camera_properties.pitch = clamp(camera_properties.pitch, -90.0f32.to_radians(), 90.0f32.to_radians());
+                camera_properties.roll = clamp(camera_properties.roll, -90.0f32.to_radians(), 90.0f32.to_radians());
 
 
 
@@ -689,16 +584,11 @@ fn main() {
             unsafe {
                 //gl::ClearColor(0.76862745, 0.71372549, 0.94901961, 1.0); // moon raker, full opacity
                 //gl::ClearColor(0.0, 0.0, 0.0, 1.0);//black sky
-                gl::ClearColor(1.0, 0.6, 0.79, 1.0);
+                gl::ClearColor(1.0, 0.6, 0.79, 1.0); // pink
                 gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
 
 
                 // Issue the necessary commands to draw your scene here
-
-
-                // let scale_vector: glm::Vec3 = glm::vec3(1.0, 1.0, 1.0);
-
-                // let angle: f32 = 360.0f32.to_radians();
 
                 //--------------- calculate camera transform matrix  -------------------//
                 let direction_vector: glm::Vec3 = glm::vec3(0.0, 0.0, -6.0);
@@ -730,8 +620,6 @@ fn main() {
                 transform_matrix = camera_perspective*transform_matrix;
                 transform_matrix = glm::translate(&transform_matrix, &move_vector);
 
-                //gl::UniformMatrix4fv(5, 1, gl::FALSE, transform_matrix.as_ptr());
-
                 // heli_root_node.get_child(0).rotation.x = elapsed;
 
                 for n in 0..num_of_hellis {
@@ -743,39 +631,25 @@ fn main() {
                     //heli_root_node.get_child(n).print();
                     door_animation_complete= door_animation(&mut heli_root_node.get_child(n).get_child(0), door_open, delta_time, &mut door_animation_complete);
 
-                    /* heli_root_node.position.x = heading.x;
-                    heli_root_node.position.y = 10.0 + 0.4*elapsed.sin();
-                    heli_root_node.position.z = heading.z;
-                    heli_root_node.rotation.y = heading.pitch;
-                    heli_root_node.rotation.x = heading.yaw;
-                    heli_root_node.rotation.z = heading.roll; */
+                    //-----------------rotate to check lighting conditions (Task5a) -----------------//
+
+                    // heli_root_node.get_child(n).rotation.x = 3.1415926535897932384626433832795*-0.5; //+- 0.5 to rotate the helicopter
+
+                    //-----------------^rotate to check lighting conditions ^-----------------//
                 }
 
 
-                //-----------------rotate to check lighting conditions (Task5a) -----------------//
-
-                // heli_root_node.rotation.x = 3.1415926535897932384626433832795*-0.5; //+- 0.5 to rotate the helicopter
-
-
-                //-----------------^rotate to check lighting conditions ^-----------------//
-
-
                 update_node_transformations(&mut terrain_node, &scene_root.current_transformation_matrix);
+                //draw the elements mode: triangle, number of points/count: lenght of the indices, type and void* indices
                 draw_scene(&scene_root, &transform_matrix);
 
-                //draw_scene(indices.len()); //drawing the triangles now, this will dr aw all objects later
+                //draw_scene(indices.len()); //drawing the triangles now, this will draw all objects later
                 /* draw_scene(vao_terrain_id, terrain.indices.len());
                 draw_scene(vao_heli_body, helicopter.body.indices.len());
                 draw_scene(vao_heli_door, helicopter.door.indices.len());
                 draw_scene(vao_heli_main_rotor, helicopter.main_rotor.indices.len());
                 draw_scene(vao_heli_tail_rotor, helicopter.tail_rotor.indices.len());
- */
-                //do i have to bind something?
-                /*
-
-
-                 */
-                //draw the elements mode: triangle, number of points/count: lenght of the indices, type and void* indices
+                */
 
             }
 
